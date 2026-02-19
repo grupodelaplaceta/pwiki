@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>WikiGov Placeta - Sistema Institucional</title>
+    <title>WikiGov - Sistema de Gestión Institucional</title>
     <link rel="icon" type="image/png" href="https://i.postimg.cc/xd6DTcFQ/faviwiki.png">
     <script>
-      // Shim para variables de entorno sin IA
       window.process = { env: { PASSWORD: "" } };
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -17,73 +16,83 @@
         :root {
             --primary: #10b981;
             --primary-dark: #059669;
-            --wiki-bg: #f8f9fa;
-            --wiki-border: #a2a9b1;
+            --bg-main: #fcfcfc;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #ffffff;
-            color: #202122;
+            background-color: var(--bg-main);
+            color: #1e293b;
             -webkit-font-smoothing: antialiased;
         }
 
         .heading-font { font-family: 'Outfit', sans-serif; }
 
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
 
         @media print {
             @page { size: A4; margin: 2cm; }
-            .no-print, header, aside, footer, button, nav { display: none !important; }
+            .no-print, header, aside, .auth-status, button { display: none !important; }
             #root, main { display: block !important; width: 100% !important; overflow: visible !important; }
-            .wiki-card { box-shadow: none !important; border: none !important; margin: 0 !important; padding: 0 !important; }
-            .infobox { width: 300px !important; float: right !important; margin-left: 20px !important; border: 1px solid #aaa !important; }
+            .article-container { border: none !important; box-shadow: none !important; padding: 0 !important; }
         }
 
         .wiki-content h2 {
             font-family: 'Outfit', sans-serif;
-            border-bottom: 1px solid var(--wiki-border);
-            padding-bottom: 0.3rem;
-            margin-top: 2rem;
-            margin-bottom: 0.8rem;
-            font-weight: 700;
-            font-size: 1.5rem;
-            color: #000;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 0.5rem;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 800;
+            font-size: 1.75rem;
+            color: #0f172a;
         }
 
         .wiki-content h3 {
+            font-family: 'Outfit', sans-serif;
             font-weight: 700;
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             margin-top: 1.5rem;
             margin-bottom: 0.5rem;
+            color: #334155;
         }
 
-        .wiki-link { color: #3366cc; cursor: pointer; text-decoration: none; }
-        .wiki-link:hover { text-decoration: underline; }
+        .wiki-link { 
+            color: #0ea5e9; 
+            font-weight: 600; 
+            cursor: pointer; 
+            text-decoration: none; 
+            border-bottom: 1px dashed #bae6fd;
+            transition: all 0.2s;
+        }
+        .wiki-link:hover { color: #0284c7; border-bottom-style: solid; }
         
         .infobox { 
-            background: #f8f9fa; 
-            border: 1px solid #a2a9b1; 
-            padding: 1rem; 
-            font-size: 0.85rem;
-            width: 100%;
-            max-width: 320px;
+            background: white; 
+            border-radius: 1.5rem;
+            border: 1px solid #f1f5f9;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
         }
         
         .norm-badge {
-            background: #eaecf0;
-            border: 1px solid #c8ccd1;
-            padding: 2px 6px;
-            border-radius: 3px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #475569;
+            padding: 2px 8px;
+            border-radius: 6px;
             font-family: monospace;
-            font-size: 0.8rem;
-            font-weight: bold;
+            font-size: 0.75rem;
+            font-weight: 700;
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in { animation: fadeIn 0.2s ease-out forwards; }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        .animate-fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     </style>
     <script type="importmap">
 {

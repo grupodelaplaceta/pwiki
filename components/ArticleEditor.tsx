@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Article, ArticleType, ActivityLevel, ArticleLogo } from '../types';
+import { Article, ArticleType, ActivityLevel } from '../types';
 
 interface ArticleEditorProps {
   article: Partial<Article>;
@@ -24,7 +24,6 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({ article, allArticles, onS
       lawCode: article.metadata?.lawCode || '',
       sector: article.metadata?.sector || '',
       tags: article.metadata?.tags || [],
-      logos: article.metadata?.logos || [],
     },
     updatedAt: new Date().toISOString(),
   });
@@ -51,101 +50,106 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({ article, allArticles, onS
   };
 
   return (
-    <div className="bg-white border border-[#a2a9b1] p-6 animate-fade-in shadow-sm">
-      <div className="border-b border-slate-200 pb-4 mb-6 flex justify-between items-center">
-        <h2 className="text-2xl font-serif italic text-slate-800">
-          {article.id && article.title ? `Editando: ${article.title}` : 'Crear nuevo artículo'}
-        </h2>
-        <div className="flex gap-2">
-          <button onClick={onCancel} className="px-4 py-1 text-sm border border-slate-300 hover:bg-slate-50">Descartar</button>
+    <div className="bg-white rounded-[3rem] p-8 md:p-12 shadow-2xl shadow-slate-200/50 border border-slate-100 animate-fade-in mb-20">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
+        <div>
+          <h2 className="text-3xl font-black text-slate-900 heading-font tracking-tight">
+            {article.id && article.title ? 'Modificar Publicación' : 'Redactar Nuevo Documento'}
+          </h2>
+          <p className="text-xs text-slate-400 mt-2 font-bold uppercase tracking-widest">Panel de Control Editorial</p>
+        </div>
+        <div className="flex gap-3 w-full md:w-auto">
+          <button onClick={onCancel} className="flex-1 md:flex-none px-8 py-4 text-xs font-black text-slate-400 hover:text-slate-600 transition-all">DESCARTAR</button>
           <button 
             onClick={() => onSave(formData)} 
-            className="px-6 py-1 text-sm bg-[#36c] text-white font-bold hover:bg-[#447ff5]"
+            className="flex-1 md:flex-none px-10 py-4 text-xs font-black bg-slate-900 text-white rounded-2xl shadow-xl hover:bg-emerald-600 transition-all active:scale-95"
           >
-            Grabar página
+            PUBLICAR CAMBIOS
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <div className="lg:col-span-2 space-y-8">
           <div>
-            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Título de la página</label>
+            <label className="block text-[10px] font-black text-slate-300 uppercase tracking-widest mb-3">Título del Documento</label>
             <input 
               type="text" 
               value={formData.title} 
               onChange={e => setFormData({...formData, title: e.target.value})}
-              className="w-full px-3 py-2 border border-[#a2a9b1] focus:border-[#36c] outline-none text-lg"
-              placeholder="Ej: Departamento de Hacienda"
+              className="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-6 py-4 text-xl font-bold focus:bg-white focus:border-emerald-100 outline-none transition-all"
+              placeholder="Escribe el nombre aquí..."
             />
           </div>
 
           <div>
-            <div className="flex items-center gap-1 bg-[#f8f9fa] border border-[#a2a9b1] border-b-0 p-1">
-              <button onClick={() => injectSyntax("## ", "")} className="px-2 py-1 text-xs hover:bg-white border border-transparent hover:border-slate-300 font-bold">H2</button>
-              <button onClick={() => injectSyntax("### ", "")} className="px-2 py-1 text-xs hover:bg-white border border-transparent hover:border-slate-300 font-bold">H3</button>
-              <div className="w-px h-4 bg-slate-300 mx-1"></div>
-              <button onClick={() => injectSyntax("**", "**")} className="px-2 py-1 text-xs hover:bg-white border border-transparent hover:border-slate-300 font-bold"><i className="fas fa-bold"></i></button>
-              <button onClick={() => injectSyntax("[[id|", "]]")} className="px-2 py-1 text-xs hover:bg-white border border-transparent hover:border-slate-300 font-bold text-[#36c]">Link</button>
-              <button onClick={() => injectSyntax("[", "]")} className="px-2 py-1 text-xs hover:bg-white border border-transparent hover:border-slate-300 font-bold text-slate-500">Badge</button>
+            <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-t-2xl border-b-2 border-white">
+              <button onClick={() => injectSyntax("## ", "")} className="w-10 h-10 flex items-center justify-center font-black hover:bg-white rounded-xl transition-all">H2</button>
+              <button onClick={() => injectSyntax("### ", "")} className="w-10 h-10 flex items-center justify-center font-black hover:bg-white rounded-xl transition-all">H3</button>
+              <div className="w-px h-6 bg-slate-200 mx-1"></div>
+              <button onClick={() => injectSyntax("**", "**")} className="w-10 h-10 flex items-center justify-center hover:bg-white rounded-xl transition-all"><i className="fas fa-bold"></i></button>
+              <button onClick={() => injectSyntax("[[id|", "]]")} className="px-4 h-10 flex items-center justify-center text-[10px] font-black text-emerald-600 hover:bg-white rounded-xl transition-all">WIKI LINK</button>
+              <button onClick={() => injectSyntax("[", "]")} className="px-4 h-10 flex items-center justify-center text-[10px] font-black text-slate-400 hover:bg-white rounded-xl transition-all">BADGE</button>
             </div>
             <textarea 
               ref={textareaRef}
-              rows={18} 
+              rows={20} 
               value={formData.content} 
               onChange={e => setFormData({...formData, content: e.target.value})}
-              className="w-full px-3 py-3 border border-[#a2a9b1] font-mono text-sm outline-none focus:bg-[#fcfcfc] resize-y"
-              placeholder="Escribe el contenido en formato Wiki..."
+              className="w-full bg-slate-50 border-2 border-slate-50 rounded-b-2xl p-8 font-mono text-sm outline-none focus:bg-white focus:border-emerald-100 transition-all resize-none custom-scrollbar leading-relaxed"
+              placeholder="Cuerpo del artículo en formato markdown..."
             />
           </div>
         </div>
 
-        <div className="space-y-6 bg-slate-50 p-4 border border-[#a2a9b1]">
-          <h3 className="text-xs font-bold border-b border-slate-300 pb-1 mb-3">Metadatos de la ficha</h3>
-          
-          <div className="space-y-4">
-            <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Tipo de artículo</label>
-              <select 
-                value={formData.type} 
-                onChange={e => setFormData({...formData, type: e.target.value as ArticleType})}
-                className="w-full px-2 py-1 border border-slate-300 text-xs outline-none"
-              >
-                {Object.values(ArticleType).map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
-            </div>
+        <div className="space-y-10">
+          <div className="p-8 bg-slate-50 rounded-[2.5rem] space-y-8">
+            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-200 pb-4">Ficha Técnica</h3>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Tipo de Artículo</label>
+                <select 
+                  value={formData.type} 
+                  onChange={e => setFormData({...formData, type: e.target.value as ArticleType})}
+                  className="w-full bg-white rounded-xl px-4 py-3 text-xs font-bold outline-none border border-transparent focus:border-emerald-200"
+                >
+                  {Object.values(ArticleType).map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
 
-            <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Padre (Jerarquía)</label>
-              <select 
-                value={formData.parentId || ''} 
-                onChange={e => setFormData({...formData, parentId: e.target.value || undefined})}
-                className="w-full px-2 py-1 border border-slate-300 text-xs outline-none"
-              >
-                <option value="">(Raíz)</option>
-                {allArticles.filter(a => a.id !== formData.id).map(a => <option key={a.id} value={a.id}>{a.title}</option>)}
-              </select>
-            </div>
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Superior (Jerarquía)</label>
+                <select 
+                  value={formData.parentId || ''} 
+                  onChange={e => setFormData({...formData, parentId: e.target.value || undefined})}
+                  className="w-full bg-white rounded-xl px-4 py-3 text-xs font-bold outline-none border border-transparent focus:border-emerald-200"
+                >
+                  <option value="">(Raíz)</option>
+                  {allArticles.filter(a => a.id !== formData.id).map(a => <option key={a.id} value={a.id}>{a.title}</option>)}
+                </select>
+              </div>
 
-            <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Responsable</label>
-              <input type="text" value={formData.metadata.responsible} onChange={e => setFormData({...formData, metadata: {...formData.metadata, responsible: e.target.value}})} className="w-full px-2 py-1 border border-slate-300 text-xs outline-none" />
-            </div>
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Responsable</label>
+                <input type="text" value={formData.metadata.responsible} onChange={e => setFormData({...formData, metadata: {...formData.metadata, responsible: e.target.value}})} className="w-full bg-white rounded-xl px-4 py-3 text-xs font-bold outline-none border border-transparent focus:border-emerald-200" />
+              </div>
 
-            <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Cód. Normativo</label>
-              <input type="text" value={formData.metadata.lawCode} onChange={e => setFormData({...formData, metadata: {...formData.metadata, lawCode: e.target.value}})} className="w-full px-2 py-1 border border-slate-300 text-xs font-mono outline-none" placeholder="NORM-XXX" />
-            </div>
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Código Normativo</label>
+                <input type="text" value={formData.metadata.lawCode} onChange={e => setFormData({...formData, metadata: {...formData.metadata, lawCode: e.target.value}})} className="w-full bg-white rounded-xl px-4 py-3 text-xs font-black font-mono outline-none border border-transparent focus:border-emerald-200" placeholder="Ej: NORM-001" />
+              </div>
 
-            <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Resumen (Intro)</label>
-              <textarea 
-                rows={3} 
-                value={formData.summary} 
-                onChange={e => setFormData({...formData, summary: e.target.value})}
-                className="w-full px-2 py-1 border border-slate-300 text-xs outline-none resize-none"
-                placeholder="Breve descripción..."
-              />
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Resumen Corto</label>
+                <textarea 
+                  rows={4} 
+                  value={formData.summary} 
+                  onChange={e => setFormData({...formData, summary: e.target.value})}
+                  className="w-full bg-white rounded-xl px-4 py-3 text-xs font-bold outline-none border border-transparent focus:border-emerald-200 resize-none"
+                  placeholder="Introduce una breve descripción..."
+                />
+              </div>
             </div>
           </div>
         </div>
