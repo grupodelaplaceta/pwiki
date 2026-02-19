@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { Article, ArticleType, ActivityLevel, ARTICLE_ICONS } from '../types';
 
@@ -21,56 +20,21 @@ const ArticleView: React.FC<ArticleViewProps> = ({ article, onEdit, onNavigate, 
   );
 
   const activityColors = {
-    [ActivityLevel.ACTIVE]: 'text-green-600 bg-green-50 border-green-100',
-    [ActivityLevel.SEMI_ACTIVE]: 'text-orange-500 bg-orange-50 border-orange-100',
+    [ActivityLevel.ACTIVE]: 'text-emerald-600 bg-emerald-50 border-emerald-100',
+    [ActivityLevel.SEMI_ACTIVE]: 'text-amber-600 bg-amber-50 border-amber-100',
     [ActivityLevel.INACTIVE]: 'text-slate-400 bg-slate-50 border-slate-100',
   }[article.activityLevel];
 
-  const logos = article.metadata.logos || [];
-  const currentLogo = logos[0];
-
   const renderRichText = (text: string) => {
     let html = text;
-
-    // Snippets {{snippet:id}}
-    html = html.replace(/\{\{snippet:(.*?)\}\}/g, (match, id) => {
-      const target = allArticles.find(a => a.id === id);
-      if (!target) return `<div class="snippet-box text-red-500 italic">Snippet no encontrado: ${id}</div>`;
-      return `
-        <div class="snippet-box">
-          <div class="font-bold text-slate-800 mb-2 flex items-center gap-2">
-            <i class="fas fa-quote-left text-green-600 text-[10px]"></i>
-            Referencia: <span class="wiki-link" data-wiki-id="${target.id}">${target.title}</span>
-          </div>
-          <div class="text-slate-600 leading-relaxed text-sm">${target.summary || target.content.substring(0, 150) + '...'}</div>
-        </div>
-      `;
-    });
-
-    // Headers
-    html = html.replace(/## (.*)/g, '<h2 class="text-2xl md:text-3xl font-black mt-10 md:mt-12 mb-5 md:mb-6 tracking-tight">$1</h2>');
-    html = html.replace(/### (.*)/g, '<h3 class="text-xl font-black mt-10 mb-5 tracking-tight">$1</h3>');
-    
-    // Bold
-    html = html.replace(/\*\*(.*?)\*\*/g, '<b class="font-bold text-slate-950">$1</b>');
-    
-    // Lists
-    html = html.replace(/^\- (.*)/gm, '<li class="ml-5 mb-3 md:mb-4 list-disc text-slate-700">$1</li>');
-    html = html.replace(/^\d+\. (.*)/gm, '<li class="ml-5 mb-3 md:mb-4 list-decimal text-slate-700">$1</li>');
-
-    // Internal Links [[ID|Label]]
-    html = html.replace(/\[\[(.*?)\|(.*?)\]\]/g, (match, id, label) => {
-      return `<span class="wiki-link font-black text-green-600 underline decoration-green-200 decoration-2 underline-offset-4 hover:decoration-green-500 transition-all cursor-pointer" data-wiki-id="${id}">${label}</span>`;
-    });
-
-    // Regulations [CODE]
-    html = html.replace(/\[(.*?)\]/g, (match, code) => {
-      return `<span class="norm-badge">${code}</span>`;
-    });
-
-    // Line breaks
-    html = html.split('\n').join('<br/>').replace(/(<br\/>){3,}/g, '<br/><br/>');
-
+    // Basic Markdown transformations
+    html = html.replace(/## (.*)/g, '<h2 class="text-2xl font-black mt-8 mb-4 border-b border-slate-100 pb-2">$1</h2>');
+    html = html.replace(/### (.*)/g, '<h3 class="text-xl font-bold mt-6 mb-3 text-slate-800">$1</h3>');
+    html = html.replace(/\*\*(.*?)\*\*/g, '<b class="font-bold text-slate-900">$1</b>');
+    html = html.replace(/^\- (.*)/gm, '<li class="ml-5 mb-2 list-disc">$1</li>');
+    html = html.replace(/\[\[(.*?)\|(.*?)\]\]/g, '<span class="wiki-link text-emerald-600 font-bold hover:underline cursor-pointer" data-wiki-id="$1">$2</span>');
+    html = html.replace(/\[(.*?)\]/g, '<span class="norm-badge">$1</span>');
+    html = html.split('\n').join('<br/>');
     return html;
   };
 
@@ -80,99 +44,88 @@ const ArticleView: React.FC<ArticleViewProps> = ({ article, onEdit, onNavigate, 
     if (wikiId) onNavigate(wikiId);
   };
 
+  const handlePrint = () => {
+    // Triggers the system print dialog which is the browser standard for "Download as PDF"
+    window.print();
+  };
+
+  const currentLogo = article.metadata.logos?.[0];
+
   return (
-    <div className="bg-white border border-slate-100 rounded-3xl md:rounded-[3.5rem] shadow-2xl shadow-slate-200/50 overflow-hidden transition-all flex flex-col">
-      <div className="p-5 sm:p-10 md:p-16 lg:p-20">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-10 border-b border-slate-50 pb-8 md:pb-12">
+    <div className="bg-white border border-slate-200 rounded-3xl shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col wiki-card transition-all">
+      <div className="p-6 md:p-12">
+        {/* CABECERA ARTÍCULO */}
+        <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-10 pb-8 border-b border-slate-100">
           <div className="w-full">
-            <div className="flex flex-wrap items-center gap-2 text-[9px] font-black text-slate-300 mb-4 uppercase tracking-widest">
-              <span className="flex items-center gap-2 px-2 py-1 bg-slate-50 rounded-lg border border-slate-100">
-                <i className={`fas ${ARTICLE_ICONS[article.type]} text-green-600`}></i>
-                {article.type}
+            <div className="flex flex-wrap items-center gap-3 mb-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+              <span className="flex items-center gap-2 px-2 py-1 bg-slate-100 rounded-lg text-slate-600">
+                <i className={`fas ${ARTICLE_ICONS[article.type]}`}></i> {article.type}
               </span>
-              <span className={`px-2 py-1 rounded-lg border ${activityColors}`}>{article.activityLevel}</span>
+              <span className={`px-2 py-1 rounded-lg border ${activityColors}`}>
+                {article.activityLevel}
+              </span>
               {parent && (
-                <button 
-                  onClick={() => onNavigate(parent.id)} 
-                  className="flex items-center gap-2 hover:text-green-600 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100"
-                >
-                  <i className="fas fa-chevron-left text-[8px]"></i>
-                  {parent.title}
+                <button onClick={() => onNavigate(parent.id)} className="hover:text-emerald-600 flex items-center gap-1 transition-colors no-print">
+                  <i className="fas fa-arrow-left text-[8px]"></i> {parent.title}
                 </button>
               )}
             </div>
-            <div className="flex flex-col md:flex-row md:items-center gap-6">
-              {currentLogo && (
-                <div className="w-20 h-20 md:w-28 md:h-28 rounded-[2rem] bg-slate-50 border border-slate-100 p-4 flex items-center justify-center shrink-0 shadow-sm transition-transform hover:scale-105">
-                  <img src={currentLogo.url} alt={currentLogo.label} className="max-w-full max-h-full object-contain" />
-                </div>
-              )}
-              <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 leading-[1.15] tracking-tighter">
-                {article.title}
-              </h1>
-            </div>
+            <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter leading-tight heading-font">
+              {article.title}
+            </h1>
           </div>
           
-          <div className="flex gap-2 no-print shrink-0 md:mt-1 self-end md:self-start">
-            <button onClick={onEdit} className="flex items-center justify-center w-12 h-12 rounded-2xl bg-slate-50 text-slate-400 hover:text-slate-900 border border-slate-100 transition-all active:scale-95 shadow-sm" title="Editar">
-              <i className="fas fa-pen-nib"></i>
+          <div className="no-print flex gap-2 shrink-0 self-end md:self-start">
+            <button 
+              onClick={onEdit}
+              className="w-12 h-12 flex items-center justify-center bg-slate-50 border border-slate-100 rounded-2xl text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all active:scale-90"
+              title="Editar este documento"
+            >
+              <i className="fas fa-edit"></i>
             </button>
-            <button onClick={() => window.print()} className="flex items-center justify-center w-12 h-12 rounded-2xl bg-slate-50 text-slate-400 hover:text-slate-900 border border-slate-100 transition-all active:scale-95 shadow-sm" title="Imprimir">
-              <i className="fas fa-print"></i>
+            <button 
+              onClick={handlePrint}
+              className="w-12 h-12 flex items-center justify-center bg-slate-50 border border-slate-100 rounded-2xl text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all active:scale-90"
+              title="Descargar PDF / Imprimir"
+            >
+              <i className="fas fa-file-pdf"></i>
             </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-10 lg:gap-20">
-          <div className="lg:col-span-3">
+        <div className="flex flex-col lg:flex-row gap-12">
+          {/* CONTENIDO PRINCIPAL */}
+          <div className="flex-1 order-2 lg:order-1">
             {article.summary && (
-              <div className="text-slate-500 text-base md:text-xl leading-relaxed italic border-l-4 md:border-l-8 border-green-500 pl-4 md:pl-8 mb-10 md:mb-16 py-3 md:py-4 bg-green-50/10 rounded-r-3xl">
+              <div className="text-slate-500 text-lg leading-relaxed italic border-l-4 border-emerald-500 pl-6 mb-12 py-2 bg-emerald-50/20 rounded-r-xl">
                 {article.summary}
               </div>
             )}
 
             <div 
-              className="wiki-content prose prose-slate max-w-none text-slate-800"
+              className="wiki-content text-slate-700 leading-relaxed text-base md:text-lg"
               onClick={handleContentClick}
               dangerouslySetInnerHTML={{ __html: renderRichText(article.content) }}
             />
 
-            {/* Logo Evolution Gallery */}
-            {logos.length > 0 && (
-              <div className="mt-20 pt-12 border-t border-slate-100">
-                <h4 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-8 px-1">Evolución de la Identidad Visual</h4>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-                  {logos.map((logo, index) => (
-                    <div key={index} className="group flex flex-col items-center">
-                      <div className="w-full aspect-square bg-slate-50 border border-slate-100 rounded-[2rem] p-6 flex items-center justify-center mb-3 transition-all group-hover:bg-white group-hover:shadow-2xl group-hover:shadow-slate-100 group-hover:scale-105">
-                        <img src={logo.url} alt={logo.label} className="max-w-full max-h-full object-contain" />
-                      </div>
-                      <div className="text-center">
-                        <p className="text-[10px] font-black text-slate-700 uppercase leading-tight">{logo.label}</p>
-                        {logo.period && <p className="text-[9px] font-bold text-slate-400 mt-1">{logo.period}</p>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
+            {/* HIJOS / SUBSECCIONES */}
             {children.length > 0 && (
-              <div className="mt-16 pt-12 border-t border-slate-50">
-                <h4 className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-6">Contenidos Relacionados</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="mt-16 pt-10 border-t border-slate-100">
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 no-print">Dependencias y Subsecciones</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 no-print">
                   {children.map(child => (
                     <button 
                       key={child.id}
                       onClick={() => onNavigate(child.id)}
-                      className="p-5 text-sm font-black text-slate-700 bg-slate-50/50 hover:bg-white hover:shadow-xl hover:border-slate-200 rounded-[1.5rem] border border-transparent text-left transition-all flex items-center gap-4 group"
+                      className="p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-white hover:border-emerald-200 hover:shadow-lg transition-all text-left flex items-center gap-4 group"
                     >
-                      <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-all">
-                        <i className={`fas ${ARTICLE_ICONS[child.type]} text-xs`}></i>
+                      <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-emerald-600 transition-colors group-hover:bg-emerald-600 group-hover:text-white">
+                        <i className={`fas ${ARTICLE_ICONS[child.type]}`}></i>
                       </div>
-                      <span className="truncate flex-1">{child.title}</span>
-                      <i className="fas fa-arrow-right text-[10px] opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0"></i>
+                      <div>
+                        <p className="text-sm font-black text-slate-800">{child.title}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{child.type}</p>
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -180,46 +133,76 @@ const ArticleView: React.FC<ArticleViewProps> = ({ article, onEdit, onNavigate, 
             )}
           </div>
 
-          <aside className="lg:col-span-1 no-print">
-            <div className="bg-slate-50/80 backdrop-blur-sm rounded-[2.5rem] p-6 md:p-8 border border-slate-100 space-y-8 sticky top-8">
-              <div>
-                <h5 className="text-[10px] font-black text-slate-400 uppercase mb-5 tracking-widest">Información</h5>
-                <div className="space-y-5">
+          {/* SIDEBAR METADATOS (INFOBOX) */}
+          <aside className="w-full lg:w-80 order-1 lg:order-2">
+            <div className="sticky top-8 space-y-6 infobox">
+              {currentLogo && (
+                <div className="mb-6 flex flex-col items-center">
+                  <div className="w-32 h-32 md:w-40 md:h-40 bg-white border border-slate-100 rounded-3xl p-4 flex items-center justify-center shadow-sm overflow-hidden mb-2">
+                    <img src={currentLogo.url} alt={currentLogo.label} className="max-w-full max-h-full object-contain" />
+                  </div>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{currentLogo.label}</span>
+                </div>
+              )}
+
+              <div className="space-y-6">
+                <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Ficha del Documento</h5>
+                
+                <div className="space-y-4">
                   <div>
                     <label className="text-[9px] font-black text-slate-300 uppercase block mb-1">Responsable</label>
-                    <p className="font-black text-slate-800 text-sm">{article.metadata.responsible || '---'}</p>
+                    <p className="text-sm font-black text-slate-800 leading-tight">{article.metadata.responsible || "No asignado"}</p>
                   </div>
                   {article.metadata.sector && (
                     <div>
-                      <label className="text-[9px] font-black text-slate-300 uppercase block mb-1">Ámbito</label>
-                      <p className="font-black text-green-700 text-xs bg-white px-3 py-1.5 rounded-xl border border-slate-100 inline-block">{article.metadata.sector}</p>
+                      <label className="text-[9px] font-black text-slate-300 uppercase block mb-1">Sector Ámbito</label>
+                      <p className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded inline-block">{article.metadata.sector}</p>
                     </div>
                   )}
                   {article.metadata.lawCode && (
                     <div>
-                      <label className="text-[9px] font-black text-slate-300 uppercase block mb-1">Referencia</label>
-                      <div className="font-mono text-[10px] font-black text-slate-600 bg-white px-3 py-2 rounded-xl border border-slate-100 mt-1 flex items-center gap-2 shadow-sm">
-                        <i className="fas fa-fingerprint opacity-20"></i>
+                      <label className="text-[9px] font-black text-slate-300 uppercase block mb-1">Referencia Legal</label>
+                      <div className="inline-block px-2 py-1 bg-slate-100 border border-slate-200 rounded font-mono text-[10px] font-bold text-slate-600 shadow-sm mt-1">
                         {article.metadata.lawCode}
                       </div>
                     </div>
                   )}
+                  {article.metadata.established && (
+                    <div>
+                      <label className="text-[9px] font-black text-slate-300 uppercase block mb-1">Establecido</label>
+                      <p className="text-xs font-bold text-slate-600">{article.metadata.established}</p>
+                    </div>
+                  )}
                 </div>
-              </div>
-              
-              <div className="pt-6 border-t border-slate-200/50">
-                <h5 className="text-[10px] font-black text-slate-400 uppercase mb-3 tracking-widest">Etiquetas</h5>
-                <div className="flex flex-wrap gap-2">
-                  {article.metadata.tags.map(tag => (
-                    <span key={tag} className="text-[9px] font-bold text-slate-500 bg-white px-3 py-1 rounded-lg border border-slate-100">
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="text-[9px] text-slate-300 font-black uppercase text-center pt-2 opacity-50">
-                Act: {new Date(article.updatedAt).toLocaleDateString()}
+
+                {/* HISTÓRICO DE LOGOS EN INFOBOX */}
+                {article.metadata.logos && article.metadata.logos.length > 1 && (
+                  <div className="pt-6 border-t border-slate-100 no-print">
+                    <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Evolución de Identidad</h5>
+                    <div className="grid grid-cols-2 gap-2">
+                      {article.metadata.logos.slice(1).map((logo, idx) => (
+                        <div key={idx} className="group flex flex-col items-center bg-slate-50 p-2 rounded-xl border border-slate-100">
+                          <img src={logo.url} alt={logo.label} className="w-12 h-12 object-contain mb-1 opacity-60 group-hover:opacity-100 transition-opacity" />
+                          <span className="text-[8px] font-black text-slate-400 text-center uppercase leading-tight">{logo.label}</span>
+                          <span className="text-[7px] font-bold text-slate-300">{logo.period}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {article.metadata.tags.length > 0 && (
+                  <div className="pt-6 border-t border-slate-100 no-print">
+                    <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Etiquetas</h5>
+                    <div className="flex flex-wrap gap-1.5">
+                      {article.metadata.tags.map(tag => (
+                        <span key={tag} className="px-2 py-0.5 bg-slate-50 border border-slate-100 rounded text-[9px] font-bold text-slate-400 hover:text-emerald-500 hover:border-emerald-200 cursor-default transition-colors">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </aside>

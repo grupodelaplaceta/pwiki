@@ -1,7 +1,5 @@
-
 import React, { useState, useRef } from 'react';
 import { Article, ArticleType, ActivityLevel, ArticleLogo } from '../types';
-import { summarizeArticle, suggestRelatedTags } from '../services/geminiService';
 
 interface ArticleEditorProps {
   article: Partial<Article>;
@@ -31,7 +29,6 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({ article, allArticles, onS
     updatedAt: new Date().toISOString(),
   });
 
-  const [loadingAI, setLoadingAI] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const injectSyntax = (prefix: string, suffix: string = '') => {
@@ -51,22 +48,6 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({ article, allArticles, onS
         textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
       }
     }, 0);
-  };
-
-  const handleAiAssistance = async () => {
-    if (!formData.content) return;
-    setLoadingAI(true);
-    try {
-      const summary = await summarizeArticle(formData.content);
-      const tags = await suggestRelatedTags(formData.title, formData.content);
-      setFormData(prev => ({
-        ...prev,
-        summary,
-        metadata: { ...prev.metadata, tags: Array.from(new Set([...prev.metadata.tags, ...tags])) }
-      }));
-    } finally {
-      setLoadingAI(false);
-    }
   };
 
   const addLogo = () => {
@@ -101,13 +82,13 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({ article, allArticles, onS
   };
 
   return (
-    <div className="bg-white shadow-2xl border border-slate-100 rounded-[2rem] md:rounded-[3rem] overflow-hidden flex flex-col">
+    <div className="bg-white shadow-2xl border border-slate-100 rounded-[2rem] md:rounded-[3rem] overflow-hidden flex flex-col animate-fade-in">
       <div className="p-6 md:p-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-slate-50 bg-slate-50/20">
         <div>
-          <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
+          <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight heading-font">
             {article.id && article.title ? 'Modificar Entrada' : 'Nuevo Documento'}
           </h2>
-          <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1">Placeta Editor Engine</p>
+          <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1">Editor Institucional</p>
         </div>
         <div className="flex gap-2 w-full md:w-auto">
           <button onClick={onCancel} className="flex-1 md:flex-none px-4 py-3 text-sm font-bold text-slate-400 hover:text-slate-600 transition-all">Cancelar</button>
@@ -130,7 +111,7 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({ article, allArticles, onS
                 value={formData.title} 
                 onChange={e => setFormData({...formData, title: e.target.value})}
                 placeholder="Título..."
-                className="w-full px-5 py-4 border-2 border-slate-50 rounded-2xl text-base focus:border-green-100 outline-none transition-all font-bold text-slate-800 bg-slate-50/30"
+                className="w-full px-5 py-4 border-2 border-slate-50 rounded-2xl text-base focus:border-emerald-100 outline-none transition-all font-bold text-slate-800 bg-slate-50/30"
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -163,95 +144,32 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({ article, allArticles, onS
               rows={4} 
               value={formData.summary} 
               onChange={e => setFormData({...formData, summary: e.target.value})}
-              placeholder="Breve resumen..."
-              className="w-full px-5 py-4 border-2 border-slate-50 rounded-2xl text-sm outline-none focus:border-green-100 transition-all resize-none bg-slate-50/30 font-medium"
+              placeholder="Breve resumen institucional..."
+              className="w-full px-5 py-4 border-2 border-slate-50 rounded-2xl text-sm outline-none focus:border-emerald-100 transition-all resize-none bg-slate-50/30 font-medium"
             />
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <div>
-              <label className="block text-[10px] font-black text-slate-300 uppercase mb-2">Parentesco</label>
+              <label className="block text-[10px] font-black text-slate-300 uppercase mb-2">Parentesco (Jerarquía)</label>
               <select 
                 value={formData.parentId || ''} 
                 onChange={e => setFormData({...formData, parentId: e.target.value || undefined})}
                 className="w-full px-4 py-3 border-2 border-slate-50 rounded-2xl text-xs outline-none bg-slate-50/30 font-bold"
               >
-                <option value="">Raíz</option>
+                <option value="">Documento Raíz</option>
                 {allArticles.filter(a => a.id !== formData.id).map(a => <option key={a.id} value={a.id}>{a.title}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-[10px] font-black text-slate-300 uppercase mb-2">Gestor</label>
-              <input type="text" placeholder="Nombre..." value={formData.metadata.responsible} onChange={e => setFormData({...formData, metadata: {...formData.metadata, responsible: e.target.value}})} className="w-full px-4 py-3 border-2 border-slate-50 rounded-2xl text-xs outline-none focus:border-green-100 bg-slate-50/30 font-bold" />
+              <label className="block text-[10px] font-black text-slate-300 uppercase mb-2">Gestor Responsable</label>
+              <input type="text" placeholder="Nombre..." value={formData.metadata.responsible} onChange={e => setFormData({...formData, metadata: {...formData.metadata, responsible: e.target.value}})} className="w-full px-4 py-3 border-2 border-slate-50 rounded-2xl text-xs outline-none focus:border-emerald-100 bg-slate-50/30 font-bold" />
             </div>
             <div>
-              <label className="block text-[10px] font-black text-slate-300 uppercase mb-2">ID Registro</label>
-              <input type="text" placeholder="Código..." value={formData.metadata.lawCode} onChange={e => setFormData({...formData, metadata: {...formData.metadata, lawCode: e.target.value}})} className="w-full px-4 py-3 border-2 border-slate-50 rounded-2xl text-xs font-mono outline-none focus:border-green-100 bg-slate-50/30 font-black" />
+              <label className="block text-[10px] font-black text-slate-300 uppercase mb-2">Código Registro</label>
+              <input type="text" placeholder="Ej: NORM-001..." value={formData.metadata.lawCode} onChange={e => setFormData({...formData, metadata: {...formData.metadata, lawCode: e.target.value}})} className="w-full px-4 py-3 border-2 border-slate-50 rounded-2xl text-xs font-mono outline-none focus:border-emerald-100 bg-slate-50/30 font-black" />
             </div>
-        </div>
-
-        {/* Logo Management Section */}
-        <div className="space-y-4 pt-4 border-t border-slate-50">
-          <div className="flex items-center justify-between">
-            <label className="block text-[10px] font-black text-slate-300 uppercase tracking-widest">Identidad Visual / Histórico de Logos</label>
-            <button 
-              type="button" 
-              onClick={addLogo}
-              className="px-4 py-2 text-[10px] font-black text-green-700 bg-green-50 rounded-xl hover:bg-green-100 transition-all flex items-center gap-2"
-            >
-              <i className="fas fa-plus"></i> AÑADIR LOGO
-            </button>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {(formData.metadata.logos || []).map((logo, index) => (
-              <div key={index} className="p-5 border-2 border-slate-50 rounded-[2rem] bg-slate-50/20 relative group transition-all hover:border-slate-100">
-                <button 
-                  type="button"
-                  onClick={() => removeLogo(index)}
-                  className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-red-50 text-red-500 border border-red-100 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500 hover:text-white"
-                >
-                  <i className="fas fa-times"></i>
-                </button>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden shrink-0">
-                      {logo.url ? <img src={logo.url} className="w-full h-full object-contain" alt="Preview" /> : <i className="fas fa-image text-slate-200"></i>}
-                    </div>
-                    <input 
-                      type="text" 
-                      value={logo.url} 
-                      onChange={e => updateLogo(index, 'url', e.target.value)}
-                      placeholder="URL de la imagen..."
-                      className="flex-1 px-3 py-2 border border-slate-100 rounded-lg text-xs outline-none focus:border-green-100"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <input 
-                      type="text" 
-                      value={logo.label} 
-                      onChange={e => updateLogo(index, 'label', e.target.value)}
-                      placeholder="Nombre/Etiqueta..."
-                      className="px-3 py-2 border border-slate-100 rounded-lg text-[10px] outline-none focus:border-green-100 font-bold"
-                    />
-                    <input 
-                      type="text" 
-                      value={logo.period} 
-                      onChange={e => updateLogo(index, 'period', e.target.value)}
-                      placeholder="Periodo (ej: 1990-2005)..."
-                      className="px-3 py-2 border border-slate-100 rounded-lg text-[10px] outline-none focus:border-green-100"
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          {(!formData.metadata.logos || formData.metadata.logos.length === 0) && (
-            <p className="text-center py-6 text-[10px] font-black text-slate-300 uppercase tracking-widest border-2 border-dashed border-slate-50 rounded-[2rem]">
-              No hay logos registrados
-            </p>
-          )}
         </div>
 
         <div className="flex flex-col border-2 border-slate-50 rounded-[2rem] overflow-hidden bg-white shadow-inner">
@@ -262,18 +180,7 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({ article, allArticles, onS
             <button onClick={() => injectSyntax('**', '**')} className="p-3 px-5 text-xs font-black hover:bg-white rounded-xl border border-transparent hover:border-slate-200 transition-all"><i className="fas fa-bold"></i></button>
             <button onClick={() => injectSyntax('- ', '')} className="p-3 px-5 text-xs font-black hover:bg-white rounded-xl border border-transparent hover:border-slate-200 transition-all"><i className="fas fa-list-ul"></i></button>
             <div className="w-px h-6 bg-slate-200 mx-1 shrink-0"></div>
-            <button onClick={() => injectSyntax('[[id|', ']]')} className="p-3 px-5 text-[10px] font-black text-green-700 bg-green-50/50 hover:bg-white rounded-xl transition-all">LINK</button>
-            
-            <div className="ml-auto pr-2">
-              <button 
-                disabled={loadingAI} 
-                onClick={handleAiAssistance} 
-                className="px-4 py-2 text-[10px] font-black text-green-700 bg-white hover:bg-green-50 rounded-xl border border-green-200 transition-all flex items-center gap-2"
-              >
-                <i className={`fas ${loadingAI ? 'fa-spinner fa-spin' : 'fa-wand-magic-sparkles'}`}></i>
-                IA
-              </button>
-            </div>
+            <button onClick={() => injectSyntax('[[id|', ']]')} className="p-3 px-5 text-[10px] font-black text-emerald-700 bg-emerald-50/50 hover:bg-white rounded-xl transition-all">LINK WIKI</button>
           </div>
           
           <textarea 
