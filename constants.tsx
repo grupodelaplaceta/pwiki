@@ -1,4 +1,3 @@
-
 import { Article, ArticleType, ActivityLevel } from './types';
 
 export const INITIAL_ARTICLES: Article[] = [
@@ -45,7 +44,7 @@ Se rige por los criterios de transparencia habituales.`,
       status: 'Activo',
       tags: ['Finanzas', 'Gestión'],
       logos: [
-        { url: 'https://i.postimg.cc/dtyQ0jYV/WIKI.png', label: 'Logo Corporativo Actual', period: '2015 - Presente' },
+        { url: 'https://i.postimg.cc/xd6DTcFQ/faviwiki.png', label: 'Logo Corporativo Actual', period: '2015 - Presente' },
         { url: 'https://cdn-icons-png.flaticon.com/512/2830/2830284.png', label: 'Emblema Clásico', period: '1984 - 2014' }
       ]
     },

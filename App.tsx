@@ -85,7 +85,8 @@ const App: React.FC = () => {
     const q = searchQuery.toLowerCase();
     return articles.filter(a => 
       a.title?.toLowerCase().includes(q) || 
-      a.metadata?.lawCode?.toLowerCase().includes(q)
+      a.metadata?.lawCode?.toLowerCase().includes(q) ||
+      a.id.toLowerCase().includes(q)
     ).slice(0, 8);
   }, [articles, searchQuery]);
 
@@ -122,7 +123,7 @@ const App: React.FC = () => {
     if (children.length === 0) return null;
 
     return (
-      <ul className={`${depth > 0 ? 'ml-4 border-l border-slate-100 pl-2' : ''} space-y-1`}>
+      <ul className={`${depth > 0 ? 'ml-3 border-l border-slate-200 pl-2' : ''} space-y-0.5 mt-1`}>
         {children.map(child => (
           <li key={child.id}>
             <button
@@ -132,13 +133,13 @@ const App: React.FC = () => {
                 setIsCreating(false);
                 setSidebarOpen(false);
               }}
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all flex items-center gap-2 ${
+              className={`w-full text-left px-2 py-1 text-xs transition-colors flex items-center gap-2 ${
                 currentArticleId === child.id 
-                  ? 'bg-emerald-50 text-emerald-700 font-bold' 
-                  : 'text-slate-600 hover:bg-slate-50'
+                  ? 'text-emerald-700 font-bold bg-emerald-50' 
+                  : 'text-[#3366cc] hover:underline'
               }`}
             >
-              <i className={`fas ${ARTICLE_ICONS[child.type]} text-[10px] opacity-40`}></i>
+              <i className={`fas ${ARTICLE_ICONS[child.type]} text-[9px] opacity-30`}></i>
               <span className="truncate">{child.title}</span>
             </button>
             {renderNavTree(child.id, depth + 1)}
@@ -149,64 +150,134 @@ const App: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="h-screen w-screen flex items-center justify-center bg-white"><div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div></div>;
+    return <div className="h-screen w-screen flex items-center justify-center bg-white"><div className="w-10 h-10 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div></div>;
   }
 
   return (
-    <div className="flex flex-col h-screen bg-slate-50 text-slate-900">
+    <div className="flex flex-col h-screen bg-white text-slate-900">
       {showAuthModal && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setShowAuthModal(false)}></div>
-          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-sm overflow-hidden relative animate-fade-in">
-            <div className="p-8 text-center">
-              <h2 className="heading-font text-xl font-black mb-6">Acceso Administrador</h2>
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setShowAuthModal(false)}></div>
+          <div className="bg-white border border-slate-300 shadow-2xl w-full max-w-sm overflow-hidden relative animate-fade-in">
+            <div className="p-6 text-center">
+              <h2 className="heading-font text-lg font-bold mb-4">Acceso Restringido</h2>
               <form onSubmit={handleAuthAttempt} className="space-y-4">
                 <input 
-                  autoFocus type="password" placeholder="Contraseña..." value={passwordInput}
+                  autoFocus type="password" placeholder="Contraseña de edición..." value={passwordInput}
                   onChange={e => setPasswordInput(e.target.value)}
-                  className={`w-full bg-slate-50 border-2 rounded-2xl px-5 py-4 text-center outline-none ${authError ? 'border-red-200' : 'focus:border-emerald-500'}`}
+                  className={`w-full bg-slate-50 border border-slate-300 px-4 py-3 text-center outline-none ${authError ? 'border-red-500' : 'focus:border-emerald-500'}`}
                 />
-                <button type="submit" className="w-full bg-slate-900 text-white rounded-2xl py-4 font-black text-xs">VALIDAR</button>
+                <button type="submit" className="w-full bg-[#36c] text-white py-2 font-bold text-sm hover:bg-[#447ff5]">Acceder</button>
               </form>
             </div>
           </div>
         </div>
       )}
 
-      <header className="no-print h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-8 z-[100]">
+      {/* HEADER TIPO WIKIPEDIA REALISTA */}
+      <header className="no-print h-14 bg-white border-b border-[#a2a9b1] flex items-center justify-between px-4 lg:px-6 z-[100] sticky top-0">
         <div className="flex items-center gap-4">
-          <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="lg:hidden p-2 text-slate-500"><i className="fas fa-bars-staggered"></i></button>
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => { setCurrentArticleId('inicio'); setIsEditing(false); }}>
-            <img src="https://i.postimg.cc/dtyQ0jYV/WIKI.png" alt="Placeta Logo" className="h-10 w-auto" />
+          <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="lg:hidden p-2 text-slate-500"><i className="fas fa-bars"></i></button>
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => { setCurrentArticleId('inicio'); setIsEditing(false); setIsCreating(false); }}>
+            <img src="https://i.postimg.cc/xd6DTcFQ/faviwiki.png" alt="Placeta Logo" className="h-8 w-auto" />
+            <div className="hidden sm:block">
+              <div className="font-serif italic text-lg leading-none">WikiGov</div>
+              <div className="text-[10px] text-slate-500 uppercase tracking-tight">La Placeta Institutional</div>
+            </div>
           </div>
         </div>
-        <div className="hidden md:block flex-1 max-w-xl mx-8 relative">
-          <input 
-            type="text" placeholder="Buscar..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-100 rounded-full py-2 px-6 text-sm outline-none"
-          />
+        
+        <div className="flex-1 max-w-md mx-6 relative no-print">
+          <div className="relative group">
+            <input 
+              type="text" placeholder="Buscar en WikiGov..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+              className="w-full bg-white border border-[#a2a9b1] py-1.5 pl-4 pr-10 text-sm focus:border-[#36c] outline-none transition-colors"
+            />
+            <button className="absolute right-0 top-0 bottom-0 px-3 text-slate-400 hover:text-[#36c]"><i className="fas fa-search"></i></button>
+          </div>
+          {searchQuery && (
+            <div className="absolute top-full left-0 right-0 mt-0.5 bg-white border border-[#a2a9b1] shadow-lg z-[120]">
+              {filteredResults.length > 0 ? filteredResults.map(res => (
+                <button 
+                  key={res.id} 
+                  onClick={() => { setCurrentArticleId(res.id); setSearchQuery(''); }}
+                  className="w-full text-left px-4 py-2 hover:bg-[#f8f9fa] text-xs border-b border-slate-100 flex items-center gap-2"
+                >
+                  <i className={`fas ${ARTICLE_ICONS[res.type]} text-slate-300 w-4 text-center`}></i>
+                  <span>{res.title}</span>
+                </button>
+              )) : (
+                <div className="p-3 text-[11px] text-slate-400 italic">No hay resultados para "{searchQuery}"</div>
+              )}
+            </div>
+          )}
         </div>
-        <button onClick={() => startProtectedAction('create')} className="bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-black">NUEVO</button>
+
+        <div className="flex items-center gap-2">
+          <button onClick={() => startProtectedAction('create')} className="text-[#36c] text-sm font-bold hover:underline">Crear nuevo</button>
+          <div className="w-px h-4 bg-slate-300 mx-2"></div>
+          <button className="text-slate-600 text-sm hover:underline">Identificarse</button>
+        </div>
       </header>
 
       <div className="flex-1 flex overflow-hidden">
-        <aside className={`bg-white border-r border-slate-200 w-72 transition-all fixed lg:relative h-full z-[120] ${isSidebarOpen ? 'left-0' : '-left-72 lg:left-0'}`}>
-          <div className="p-4 overflow-y-auto h-full custom-scrollbar">
-            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Jerarquía</h3>
-            {renderNavTree(undefined)}
+        {/* SIDEBAR NAVEGACIÓN */}
+        <aside className={`no-print bg-[#f6f6f6] border-r border-[#a2a9b1] w-64 transition-all fixed lg:relative h-full z-[120] flex flex-col ${isSidebarOpen ? 'left-0 shadow-2xl' : '-left-64 lg:left-0'}`}>
+          <div className="p-4 overflow-y-auto flex-1 custom-scrollbar">
+            <div className="mb-6">
+              <h3 className="text-[11px] font-bold text-slate-500 uppercase border-b border-slate-200 pb-1 mb-2">Páginas</h3>
+              <button 
+                onClick={() => { setCurrentArticleId('inicio'); setIsEditing(false); setIsCreating(false); setSidebarOpen(false); }}
+                className={`w-full text-left px-2 py-1 text-xs transition-colors ${currentArticleId === 'inicio' ? 'font-bold' : 'text-[#3366cc] hover:underline'}`}
+              >
+                Portada
+              </button>
+              <button className="w-full text-left px-2 py-1 text-xs text-[#3366cc] hover:underline">Página aleatoria</button>
+            </div>
+            
+            <div className="mb-6">
+              <h3 className="text-[11px] font-bold text-slate-500 uppercase border-b border-slate-200 pb-1 mb-2">Departamentos</h3>
+              {renderNavTree(undefined)}
+            </div>
+          </div>
+          <div className="p-3 bg-slate-100 border-t border-slate-200 text-[9px] text-slate-400 flex flex-col gap-1">
+            <div className="flex justify-between">
+              <span>ESTADO</span>
+              <span className={isAuthenticated ? "text-amber-600 font-bold" : "text-emerald-600 font-bold"}>
+                {isAuthenticated ? "MODO EDICIÓN" : "LECTURA"}
+              </span>
+            </div>
+            {isAuthenticated && (
+              <button onClick={() => setIsAuthenticated(false)} className="text-[#36c] hover:underline text-left">Cerrar sesión editor</button>
+            )}
           </div>
         </aside>
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-12">
-          {isCreating ? (
-            <ArticleEditor allArticles={articles} article={{}} onSave={handleSave} onCancel={() => setIsCreating(false)} />
-          ) : isEditing ? (
-            <ArticleEditor allArticles={articles} article={currentArticle} onSave={handleSave} onCancel={() => setIsEditing(false)} />
-          ) : (
-            <ArticleView article={currentArticle} allArticles={articles} onEdit={() => startProtectedAction('edit')} onNavigate={setCurrentArticleId} />
-          )}
+        {/* CONTENIDO PRINCIPAL */}
+        <main className="flex-1 overflow-y-auto p-4 lg:px-12 lg:py-8 bg-white selection:bg-blue-100">
+          <div className="max-w-5xl mx-auto">
+            {isCreating ? (
+              <ArticleEditor allArticles={articles} article={{}} onSave={handleSave} onCancel={() => setIsCreating(false)} />
+            ) : isEditing ? (
+              <ArticleEditor allArticles={articles} article={currentArticle} onSave={handleSave} onCancel={() => setIsEditing(false)} />
+            ) : (
+              <ArticleView article={currentArticle} allArticles={articles} onEdit={() => startProtectedAction('edit')} onNavigate={setCurrentArticleId} />
+            )}
+          </div>
         </main>
       </div>
+      
+      <footer className="no-print h-10 bg-[#f6f6f6] border-t border-[#a2a9b1] flex items-center justify-between px-6 text-[10px] text-slate-500">
+        <div className="flex gap-4">
+          <span className="hover:underline cursor-pointer">Política de privacidad</span>
+          <span className="hover:underline cursor-pointer">Acerca de WikiGov</span>
+          <span className="hover:underline cursor-pointer">Aviso legal</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <i className="fab fa-creative-commons"></i>
+          <span>Contenido bajo licencia CC BY-SA 4.0</span>
+        </div>
+      </footer>
     </div>
   );
 };
