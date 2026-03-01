@@ -22,17 +22,32 @@ const getEnvVar = (key: string): string => {
 const db = {
   save: async (articles: Article[]) => {
     try {
-      localStorage.setItem('wiki_placeta_v3_store', JSON.stringify(articles));
+      const response = await fetch('/api/articles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(articles)
+      });
+      if (!response.ok) throw new Error('Failed to save to DB');
     } catch (e) {
-      console.error("Storage error:", e);
+      console.error("Database save error:", e);
+      // Fallback to localStorage for safety
+      localStorage.setItem('wiki_placeta_v3_store', JSON.stringify(articles));
     }
   },
   load: async (): Promise<Article[]> => {
     try {
+      const response = await fetch('/api/articles');
+      if (!response.ok) throw new Error('Failed to fetch from DB');
+      const data = await response.json();
+      if (data && data.length > 0) return data;
+      
+      // If DB is empty, use initial articles and save them
+      await db.save(INITIAL_ARTICLES);
+      return INITIAL_ARTICLES;
+    } catch (e) {
+      console.error("Database load error:", e);
       const saved = localStorage.getItem('wiki_placeta_v3_store');
       return saved ? JSON.parse(saved) : INITIAL_ARTICLES;
-    } catch (e) {
-      return INITIAL_ARTICLES;
     }
   }
 };
