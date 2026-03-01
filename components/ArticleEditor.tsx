@@ -50,80 +50,80 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({ article, allArticles, onS
   };
 
   return (
-    <div className="bg-white rounded-[3rem] p-8 md:p-12 shadow-2xl shadow-slate-200/50 border border-slate-100 animate-fade-in mb-20">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
+    <div className="bg-white rounded-2xl p-6 md:p-8 shadow-2xl shadow-slate-200/50 border border-slate-100 animate-fade-in mb-10">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
-          <h2 className="text-3xl font-black text-slate-900 heading-font tracking-tight">
+          <h2 className="text-2xl font-black text-slate-900 heading-font tracking-tight">
             {article.id && article.title ? 'Modificar Publicación' : 'Redactar Nuevo Documento'}
           </h2>
-          <p className="text-xs text-slate-400 mt-2 font-bold uppercase tracking-widest">Panel de Control Editorial</p>
+          <p className="text-[10px] text-slate-400 mt-1 font-bold uppercase tracking-widest">Panel de Control Editorial</p>
         </div>
-        <div className="flex gap-3 w-full md:w-auto">
-          <button onClick={onCancel} className="flex-1 md:flex-none px-8 py-4 text-xs font-black text-slate-400 hover:text-slate-600 transition-all">DESCARTAR</button>
+        <div className="flex gap-2 w-full md:w-auto">
+          <button onClick={onCancel} className="flex-1 md:flex-none px-6 py-3 text-[10px] font-black text-slate-400 hover:text-slate-600 transition-all">DESCARTAR</button>
           <button 
             onClick={() => onSave(formData)} 
-            className="flex-1 md:flex-none px-10 py-4 text-xs font-black bg-slate-900 text-white rounded-2xl shadow-xl hover:bg-emerald-600 transition-all active:scale-95"
+            className="flex-1 md:flex-none px-8 py-3 text-[10px] font-black bg-slate-900 text-white rounded-xl shadow-xl hover:bg-emerald-600 transition-all active:scale-95"
           >
             PUBLICAR CAMBIOS
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-        <div className="lg:col-span-2 space-y-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-6">
           <div>
-            <label className="block text-[10px] font-black text-slate-300 uppercase tracking-widest mb-3">Título del Documento</label>
+            <label className="block text-[9px] font-black text-slate-300 uppercase tracking-widest mb-2">Título del Documento</label>
             <input 
               type="text" 
               value={formData.title} 
               onChange={e => setFormData({...formData, title: e.target.value})}
-              className="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-6 py-4 text-xl font-bold focus:bg-white focus:border-emerald-100 outline-none transition-all"
+              className="w-full bg-slate-50 border-2 border-slate-50 rounded-xl px-4 py-3 text-lg font-bold focus:bg-white focus:border-emerald-100 outline-none transition-all"
               placeholder="Escribe el nombre aquí..."
             />
           </div>
 
           <div>
-            <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-t-2xl border-b-2 border-white">
-              <button onClick={() => injectSyntax("## ", "")} className="w-10 h-10 flex items-center justify-center font-black hover:bg-white rounded-xl transition-all">H2</button>
-              <button onClick={() => injectSyntax("### ", "")} className="w-10 h-10 flex items-center justify-center font-black hover:bg-white rounded-xl transition-all">H3</button>
-              <div className="w-px h-6 bg-slate-200 mx-1"></div>
-              <button onClick={() => injectSyntax("**", "**")} className="w-10 h-10 flex items-center justify-center hover:bg-white rounded-xl transition-all"><i className="fas fa-bold"></i></button>
-              <button onClick={() => injectSyntax("[[id|", "]]")} className="px-4 h-10 flex items-center justify-center text-[10px] font-black text-emerald-600 hover:bg-white rounded-xl transition-all">WIKI LINK</button>
-              <button onClick={() => injectSyntax("[", "]")} className="px-4 h-10 flex items-center justify-center text-[10px] font-black text-slate-400 hover:bg-white rounded-xl transition-all">BADGE</button>
+            <div className="flex items-center gap-1.5 bg-slate-50 p-1.5 rounded-t-xl border-b-2 border-white">
+              <button onClick={() => injectSyntax("## ", "")} className="w-8 h-8 flex items-center justify-center text-xs font-black hover:bg-white rounded-lg transition-all">H2</button>
+              <button onClick={() => injectSyntax("### ", "")} className="w-8 h-8 flex items-center justify-center text-xs font-black hover:bg-white rounded-lg transition-all">H3</button>
+              <div className="w-px h-5 bg-slate-200 mx-1"></div>
+              <button onClick={() => injectSyntax("**", "**")} className="w-8 h-8 flex items-center justify-center text-xs hover:bg-white rounded-lg transition-all"><i className="fas fa-bold"></i></button>
+              <button onClick={() => injectSyntax("[[id|", "]]")} className="px-3 h-8 flex items-center justify-center text-[9px] font-black text-emerald-600 hover:bg-white rounded-lg transition-all">WIKI LINK</button>
+              <button onClick={() => injectSyntax("[", "]")} className="px-3 h-8 flex items-center justify-center text-[9px] font-black text-slate-400 hover:bg-white rounded-lg transition-all">BADGE</button>
             </div>
             <textarea 
               ref={textareaRef}
-              rows={20} 
+              rows={15} 
               value={formData.content} 
               onChange={e => setFormData({...formData, content: e.target.value})}
-              className="w-full bg-slate-50 border-2 border-slate-50 rounded-b-2xl p-8 font-mono text-sm outline-none focus:bg-white focus:border-emerald-100 transition-all resize-none custom-scrollbar leading-relaxed"
+              className="w-full bg-slate-50 border-2 border-slate-50 rounded-b-xl p-6 font-mono text-xs outline-none focus:bg-white focus:border-emerald-100 transition-all resize-none custom-scrollbar leading-relaxed"
               placeholder="Cuerpo del artículo en formato markdown..."
             />
           </div>
         </div>
 
-        <div className="space-y-10">
-          <div className="p-8 bg-slate-50 rounded-[2.5rem] space-y-8">
-            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-200 pb-4">Ficha Técnica</h3>
+        <div className="space-y-8">
+          <div className="p-6 bg-slate-50 rounded-3xl space-y-6">
+            <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-200 pb-3">Ficha Técnica</h3>
             
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Tipo de Artículo</label>
+                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Tipo de Artículo</label>
                 <select 
                   value={formData.type} 
                   onChange={e => setFormData({...formData, type: e.target.value as ArticleType})}
-                  className="w-full bg-white rounded-xl px-4 py-3 text-xs font-bold outline-none border border-transparent focus:border-emerald-200"
+                  className="w-full bg-white rounded-lg px-3 py-2 text-[10px] font-bold outline-none border border-transparent focus:border-emerald-200"
                 >
                   {Object.values(ArticleType).map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
 
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Superior (Jerarquía)</label>
+                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Superior (Jerarquía)</label>
                 <select 
                   value={formData.parentId || ''} 
                   onChange={e => setFormData({...formData, parentId: e.target.value || undefined})}
-                  className="w-full bg-white rounded-xl px-4 py-3 text-xs font-bold outline-none border border-transparent focus:border-emerald-200"
+                  className="w-full bg-white rounded-lg px-3 py-2 text-[10px] font-bold outline-none border border-transparent focus:border-emerald-200"
                 >
                   <option value="">(Raíz)</option>
                   {allArticles.filter(a => a.id !== formData.id).map(a => <option key={a.id} value={a.id}>{a.title}</option>)}
@@ -131,22 +131,22 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({ article, allArticles, onS
               </div>
 
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Responsable</label>
-                <input type="text" value={formData.metadata.responsible} onChange={e => setFormData({...formData, metadata: {...formData.metadata, responsible: e.target.value}})} className="w-full bg-white rounded-xl px-4 py-3 text-xs font-bold outline-none border border-transparent focus:border-emerald-200" />
+                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Responsable</label>
+                <input type="text" value={formData.metadata.responsible} onChange={e => setFormData({...formData, metadata: {...formData.metadata, responsible: e.target.value}})} className="w-full bg-white rounded-lg px-3 py-2 text-[10px] font-bold outline-none border border-transparent focus:border-emerald-200" />
               </div>
 
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Código Normativo</label>
-                <input type="text" value={formData.metadata.lawCode} onChange={e => setFormData({...formData, metadata: {...formData.metadata, lawCode: e.target.value}})} className="w-full bg-white rounded-xl px-4 py-3 text-xs font-black font-mono outline-none border border-transparent focus:border-emerald-200" placeholder="Ej: NORM-001" />
+                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Código Normativo</label>
+                <input type="text" value={formData.metadata.lawCode} onChange={e => setFormData({...formData, metadata: {...formData.metadata, lawCode: e.target.value}})} className="w-full bg-white rounded-lg px-3 py-2 text-[10px] font-black font-mono outline-none border border-transparent focus:border-emerald-200" placeholder="Ej: NORM-001" />
               </div>
 
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Resumen Corto</label>
+                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Resumen Corto</label>
                 <textarea 
-                  rows={4} 
+                  rows={3} 
                   value={formData.summary} 
                   onChange={e => setFormData({...formData, summary: e.target.value})}
-                  className="w-full bg-white rounded-xl px-4 py-3 text-xs font-bold outline-none border border-transparent focus:border-emerald-200 resize-none"
+                  className="w-full bg-white rounded-lg px-3 py-2 text-[10px] font-bold outline-none border border-transparent focus:border-emerald-200 resize-none"
                   placeholder="Introduce una breve descripción..."
                 />
               </div>

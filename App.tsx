@@ -5,9 +5,16 @@ import ArticleView from './components/ArticleView';
 import ArticleEditor from './components/ArticleEditor';
 
 const getEnvVar = (key: string): string => {
+  if (key === 'PASSWORD') {
+    try {
+      return process.env.PASSWORD || "";
+    } catch {
+      return "";
+    }
+  }
   try {
-    return (window as any).process?.env?.[key] || "";
-  } catch (e) {
+    return (process.env as any)?.[key] || "";
+  } catch {
     return "";
   }
 };
@@ -15,14 +22,14 @@ const getEnvVar = (key: string): string => {
 const db = {
   save: async (articles: Article[]) => {
     try {
-      localStorage.setItem('wiki_placeta_db_modern', JSON.stringify(articles));
+      localStorage.setItem('wiki_placeta_v3_store', JSON.stringify(articles));
     } catch (e) {
       console.error("Storage error:", e);
     }
   },
   load: async (): Promise<Article[]> => {
     try {
-      const saved = localStorage.getItem('wiki_placeta_db_modern');
+      const saved = localStorage.getItem('wiki_placeta_v3_store');
       return saved ? JSON.parse(saved) : INITIAL_ARTICLES;
     } catch (e) {
       return INITIAL_ARTICLES;
@@ -52,7 +59,7 @@ const App: React.FC = () => {
       const exists = data.find(a => a.id === 'inicio');
       setCurrentArticleId(exists ? 'inicio' : (data[0]?.id || 'inicio'));
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
   }, []);
 
   const handleSave = async (newArticle: Article) => {
@@ -92,7 +99,9 @@ const App: React.FC = () => {
   const handleAuthAttempt = (e?: React.FormEvent) => {
     e?.preventDefault();
     const correctPassword = getEnvVar('PASSWORD');
-    if (!correctPassword || passwordInput === correctPassword) {
+    
+    // Solo permitimos si hay una contraseña configurada Y coincide
+    if (correctPassword && passwordInput === correctPassword) {
       setIsAuthenticated(true);
       setShowAuthModal(false);
       setAuthError(false);
@@ -132,13 +141,13 @@ const App: React.FC = () => {
                 setIsCreating(false);
                 setSidebarOpen(false);
               }}
-              className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-all flex items-center gap-3 ${
+              className={`w-full text-left px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-2 ${
                 currentArticleId === child.id 
                   ? 'bg-emerald-50 text-emerald-700 font-bold' 
                   : 'text-slate-600 hover:bg-slate-50'
               }`}
             >
-              <i className={`fas ${ARTICLE_ICONS[child.type]} text-[10px] ${currentArticleId === child.id ? 'opacity-100' : 'opacity-30'}`}></i>
+              <i className={`fas ${ARTICLE_ICONS[child.type]} text-[9px] ${currentArticleId === child.id ? 'opacity-100' : 'opacity-30'}`}></i>
               <span className="truncate">{child.title}</span>
             </button>
             {renderNavTree(child.id, depth + 1)}
@@ -157,20 +166,20 @@ const App: React.FC = () => {
       {showAuthModal && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowAuthModal(false)}></div>
-          <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden relative animate-fade-in border border-slate-100">
-            <div className="p-10 text-center">
-              <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                <i className="fas fa-lock text-slate-300 text-xl"></i>
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden relative animate-fade-in border border-slate-100">
+            <div className="p-8 text-center">
+              <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i className="fas fa-lock text-slate-300 text-lg"></i>
               </div>
-              <h2 className="heading-font text-xl font-black mb-2">Acceso Editor</h2>
-              <p className="text-xs text-slate-400 mb-8">Introduce la clave para realizar cambios</p>
-              <form onSubmit={handleAuthAttempt} className="space-y-4">
+              <h2 className="text-lg font-black mb-1">Acceso Editor</h2>
+              <p className="text-[10px] text-slate-400 mb-6 font-medium uppercase tracking-widest">Se requiere clave institucional</p>
+              <form onSubmit={handleAuthAttempt} className="space-y-3">
                 <input 
                   autoFocus type="password" placeholder="••••••••" value={passwordInput}
                   onChange={e => setPasswordInput(e.target.value)}
-                  className={`w-full bg-slate-50 border-2 rounded-2xl px-6 py-4 text-center outline-none transition-all ${authError ? 'border-red-200' : 'focus:border-emerald-500 border-slate-50'}`}
+                  className={`w-full bg-slate-50 border-2 rounded-xl px-4 py-3 text-center outline-none transition-all text-sm ${authError ? 'border-red-200' : 'focus:border-emerald-500 border-slate-50'}`}
                 />
-                <button type="submit" className="w-full bg-slate-900 text-white rounded-2xl py-4 font-black text-xs hover:bg-emerald-600 transition-colors">AUTENTICAR</button>
+                <button type="submit" className="w-full bg-slate-900 text-white rounded-xl py-3 font-black text-[10px] hover:bg-emerald-600 transition-colors tracking-widest uppercase">Validar Identidad</button>
               </form>
             </div>
           </div>
@@ -178,94 +187,94 @@ const App: React.FC = () => {
       )}
 
       {/* HEADER MODERNO */}
-      <header className="no-print h-20 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center justify-between px-6 lg:px-12 z-[100] sticky top-0">
-        <div className="flex items-center gap-6">
-          <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="lg:hidden p-3 bg-slate-50 rounded-xl text-slate-500"><i className="fas fa-bars-staggered"></i></button>
+      <header className="no-print h-14 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center justify-between px-4 lg:px-8 z-[100] sticky top-0">
+        <div className="flex items-center gap-4">
+          <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="lg:hidden p-2 bg-slate-50 rounded-lg text-slate-500"><i className="fas fa-bars-staggered text-sm"></i></button>
           <div className="flex items-center cursor-pointer" onClick={() => { setCurrentArticleId('inicio'); setIsEditing(false); setIsCreating(false); }}>
-            <img src="https://i.postimg.cc/xd6DTcFQ/faviwiki.png" alt="WikiGov Logo" className="h-10 w-auto" />
+            <img src="https://i.postimg.cc/dtyQ0jYV/WIKI.png" alt="WikiGov Logo" className="h-7 w-auto" />
           </div>
         </div>
         
-        <div className="hidden md:block flex-1 max-w-lg mx-12 relative no-print">
+        <div className="hidden md:block flex-1 max-w-md mx-8 relative no-print">
           <div className="relative group">
             <input 
-              type="text" placeholder="¿Qué estás buscando hoy?" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-100/50 border-2 border-transparent rounded-2xl py-3 pl-6 pr-12 text-sm focus:bg-white focus:border-emerald-100 outline-none transition-all"
+              type="text" placeholder="Buscador institucional..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+              className="w-full bg-slate-100/50 border-2 border-transparent rounded-xl py-2 pl-5 pr-10 text-xs focus:bg-white focus:border-emerald-100 outline-none transition-all font-semibold"
             />
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300">
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 text-xs">
               <i className="fas fa-search"></i>
             </div>
           </div>
           {searchQuery && (
-            <div className="absolute top-full left-0 right-0 mt-3 bg-white border border-slate-100 rounded-[1.5rem] shadow-2xl z-[120] overflow-hidden">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-xl shadow-xl z-[120] overflow-hidden">
               {filteredResults.length > 0 ? filteredResults.map(res => (
                 <button 
                   key={res.id} 
                   onClick={() => { setCurrentArticleId(res.id); setSearchQuery(''); }}
-                  className="w-full text-left px-6 py-4 hover:bg-emerald-50/50 transition-colors border-b border-slate-50 flex items-center gap-4"
+                  className="w-full text-left px-4 py-2 hover:bg-emerald-50/50 transition-colors border-b border-slate-50 flex items-center gap-3"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 text-xs">
+                  <div className="w-6 h-6 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 text-[10px]">
                     <i className={`fas ${ARTICLE_ICONS[res.type]}`}></i>
                   </div>
                   <div>
-                    <div className="text-sm font-bold text-slate-800">{res.title}</div>
-                    <div className="text-[10px] text-slate-400 uppercase tracking-widest">{res.type}</div>
+                    <div className="text-xs font-bold text-slate-800">{res.title}</div>
+                    <div className="text-[9px] text-slate-400 uppercase tracking-widest font-black">{res.type}</div>
                   </div>
                 </button>
               )) : (
-                <div className="p-8 text-center text-slate-400 italic text-sm">No se encontraron resultados</div>
+                <div className="p-4 text-center text-slate-400 italic text-xs">Sin resultados</div>
               )}
             </div>
           )}
         </div>
 
-        <div className="flex items-center gap-3">
-          <button onClick={() => startProtectedAction('create')} className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-2xl text-xs font-black shadow-lg shadow-emerald-500/20 transition-all active:scale-95">NUEVO</button>
-          <div className="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400">
-             <i className="fas fa-user-circle"></i>
+        <div className="flex items-center gap-2">
+          <button onClick={() => startProtectedAction('create')} className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-xl text-[9px] font-black shadow-lg shadow-emerald-500/20 transition-all active:scale-95 tracking-widest uppercase">Redactar</button>
+          <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 border border-slate-50">
+             <i className="fas fa-shield-halved text-xs"></i>
           </div>
         </div>
       </header>
 
       <div className="flex-1 flex overflow-hidden">
         {/* SIDEBAR MODERNO */}
-        <aside className={`no-print bg-white border-r border-slate-50 w-80 transition-all fixed lg:relative h-full z-[120] flex flex-col ${isSidebarOpen ? 'left-0 shadow-2xl' : '-left-80 lg:left-0'}`}>
-          <div className="p-8 overflow-y-auto flex-1 custom-scrollbar">
-            <div className="mb-10">
-              <h3 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-6">Navegación</h3>
+        <aside className={`no-print bg-white border-r border-slate-50 w-64 transition-all fixed lg:relative h-full z-[120] flex flex-col ${isSidebarOpen ? 'left-0 shadow-2xl' : '-left-64 lg:left-0'}`}>
+          <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
+            <div className="mb-6">
+              <h3 className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] mb-4">Explorar</h3>
               <nav className="space-y-1">
                 <button 
                   onClick={() => { setCurrentArticleId('inicio'); setIsEditing(false); setIsCreating(false); setSidebarOpen(false); }}
-                  className={`w-full text-left px-4 py-3 rounded-2xl text-sm transition-all flex items-center gap-3 ${currentArticleId === 'inicio' ? 'bg-slate-900 text-white font-bold' : 'text-slate-600 hover:bg-slate-50'}`}
+                  className={`w-full text-left px-3 py-2 rounded-xl text-xs transition-all flex items-center gap-2 ${currentArticleId === 'inicio' ? 'bg-slate-900 text-white font-bold' : 'text-slate-600 hover:bg-slate-50'}`}
                 >
-                  <i className="fas fa-home-alt text-[10px]"></i>
-                  Portada Principal
+                  <i className="fas fa-home-alt text-[9px]"></i>
+                  Panel de Inicio
                 </button>
-                <button className="w-full text-left px-4 py-3 rounded-2xl text-sm text-slate-400 hover:bg-slate-50 transition-all flex items-center gap-3">
-                  <i className="fas fa-random text-[10px]"></i>
-                  Exploración Libre
+                <button className="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-400 hover:bg-slate-50 transition-all flex items-center gap-2 font-semibold">
+                  <i className="fas fa-layer-group text-[9px]"></i>
+                  Estructura Total
                 </button>
               </nav>
             </div>
             
             <div>
-              <h3 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-6">Departamentos</h3>
+              <h3 className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] mb-4">Departamentos</h3>
               {renderNavTree(undefined)}
             </div>
           </div>
-          <div className="p-6 bg-slate-50/50 border-t border-slate-50">
-             <div className={`p-4 rounded-2xl flex items-center gap-3 ${isAuthenticated ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
-                <div className="w-2 h-2 rounded-full animate-pulse bg-current"></div>
-                <div className="text-[10px] font-black uppercase tracking-widest">{isAuthenticated ? 'Edición Habilitada' : 'Modo Consulta'}</div>
+          <div className="p-4 bg-slate-50/50 border-t border-slate-50">
+             <div className={`p-3 rounded-xl flex items-center gap-2 transition-colors ${isAuthenticated ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${isAuthenticated ? 'bg-amber-500' : 'bg-emerald-500'}`}></div>
+                <div className="text-[9px] font-black uppercase tracking-widest">{isAuthenticated ? 'Edición Activa' : 'Modo Lectura'}</div>
              </div>
              {isAuthenticated && (
-               <button onClick={() => setIsAuthenticated(false)} className="mt-4 w-full text-[10px] font-bold text-slate-400 hover:text-slate-600 transition-colors uppercase tracking-widest text-center">Finalizar Sesión</button>
+               <button onClick={() => setIsAuthenticated(false)} className="mt-3 w-full text-[8px] font-black text-slate-300 hover:text-slate-600 transition-colors uppercase tracking-widest text-center">Finalizar Edición</button>
              )}
           </div>
         </aside>
 
         {/* CONTENIDO PRINCIPAL */}
-        <main className="flex-1 overflow-y-auto p-6 lg:p-16 custom-scrollbar">
+        <main className="flex-1 overflow-y-auto p-4 lg:p-10 custom-scrollbar scroll-smooth">
           <div className="max-w-4xl mx-auto">
             {isCreating ? (
               <ArticleEditor allArticles={articles} article={{}} onSave={handleSave} onCancel={() => setIsCreating(false)} />
@@ -278,15 +287,14 @@ const App: React.FC = () => {
         </main>
       </div>
       
-      <footer className="no-print h-14 bg-white border-t border-slate-50 flex items-center justify-between px-8 text-[11px] text-slate-400 font-medium">
+      <footer className="no-print h-14 bg-white border-t border-slate-50 flex items-center justify-between px-8 text-[10px] text-slate-400 font-black uppercase tracking-[0.15em]">
         <div className="flex gap-6">
-          <span className="hover:text-slate-600 cursor-pointer transition-colors">Privacidad</span>
-          <span className="hover:text-slate-600 cursor-pointer transition-colors">Sistema</span>
-          <span className="hover:text-slate-600 cursor-pointer transition-colors">Soporte</span>
+          <span className="hover:text-slate-600 cursor-pointer transition-colors">Seguridad</span>
+          <span className="hover:text-slate-600 cursor-pointer transition-colors">Infraestructura</span>
+          <span className="hover:text-slate-600 cursor-pointer transition-colors">Legal</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-1 h-1 rounded-full bg-slate-200"></div>
-          <span>WikiGov Institucional &copy; 2024</span>
+          <span>&copy; WikiGov v3.0.1</span>
         </div>
       </footer>
     </div>

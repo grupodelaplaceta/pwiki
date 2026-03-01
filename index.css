@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+    --primary: #10b981;
+    --primary-dark: #059669;
+    --bg-main: #fcfcfc;
+}
+
+body {
+    font-family: var(--font-sans);
+    background-color: var(--bg-main);
+    color: #1e293b;
+    -webkit-font-smoothing: antialiased;
+}
+
+.custom-scrollbar::-webkit-scrollbar { width: 5px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
+@media print {
+    @page { size: A4; margin: 2cm; }
+    .no-print, header, aside, .auth-status, button { display: none !important; }
+    #root, main { display: block !important; width: 100% !important; overflow: visible !important; }
+    .article-container { border: none !important; box-shadow: none !important; padding: 0 !important; }
+}
+
+.wiki-content h2 {
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 0.25rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    font-weight: 800;
+    font-size: 1.25rem;
+    color: #0f172a;
+}
+
+.wiki-content h3 {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-top: 1rem;
+    margin-bottom: 0.25rem;
+    color: #334155;
+}
+
+.wiki-link { 
+    color: #0ea5e9; 
+    font-weight: 600; 
+    cursor: pointer; 
+    text-decoration: none; 
+    border-bottom: 1px dashed #bae6fd;
+    transition: all 0.2s;
+}
+.wiki-link:hover { color: #0284c7; border-bottom-style: solid; }
+
+.infobox { 
+    background: white; 
+    border-radius: 1rem;
+    border: 1px solid #f1f5f9;
+    padding: 1.25rem;
+    box-shadow: 0 2px 4px -1px rgb(0 0 0 / 0.05), 0 1px 2px -2px rgb(0 0 0 / 0.05);
+}
+
+.norm-badge {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+@keyframes fadeIn { 
+    from { opacity: 0; transform: translateY(10px); } 
+    to { opacity: 1; transform: translateY(0); } 
+}
+.animate-fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }

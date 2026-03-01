@@ -5,109 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>WikiGov - Sistema de Gestión Institucional</title>
     <link rel="icon" type="image/png" href="https://i.postimg.cc/xd6DTcFQ/faviwiki.png">
-    <script>
-      window.process = { env: { PASSWORD: "" } };
-    </script>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
-        
-        :root {
-            --primary: #10b981;
-            --primary-dark: #059669;
-            --bg-main: #fcfcfc;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-main);
-            color: #1e293b;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        .heading-font { font-family: 'Outfit', sans-serif; }
-
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-
-        @media print {
-            @page { size: A4; margin: 2cm; }
-            .no-print, header, aside, .auth-status, button { display: none !important; }
-            #root, main { display: block !important; width: 100% !important; overflow: visible !important; }
-            .article-container { border: none !important; box-shadow: none !important; padding: 0 !important; }
-        }
-
-        .wiki-content h2 {
-            font-family: 'Outfit', sans-serif;
-            border-bottom: 2px solid #f1f5f9;
-            padding-bottom: 0.5rem;
-            margin-top: 2.5rem;
-            margin-bottom: 1rem;
-            font-weight: 800;
-            font-size: 1.75rem;
-            color: #0f172a;
-        }
-
-        .wiki-content h3 {
-            font-family: 'Outfit', sans-serif;
-            font-weight: 700;
-            font-size: 1.25rem;
-            margin-top: 1.5rem;
-            margin-bottom: 0.5rem;
-            color: #334155;
-        }
-
-        .wiki-link { 
-            color: #0ea5e9; 
-            font-weight: 600; 
-            cursor: pointer; 
-            text-decoration: none; 
-            border-bottom: 1px dashed #bae6fd;
-            transition: all 0.2s;
-        }
-        .wiki-link:hover { color: #0284c7; border-bottom-style: solid; }
-        
-        .infobox { 
-            background: white; 
-            border-radius: 1.5rem;
-            border: 1px solid #f1f5f9;
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-        }
-        
-        .norm-badge {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            color: #475569;
-            padding: 2px 8px;
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 0.75rem;
-            font-weight: 700;
-        }
-
-        @keyframes fadeIn { 
-            from { opacity: 0; transform: translateY(10px); } 
-            to { opacity: 1; transform: translateY(0); } 
-        }
-        .animate-fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    </style>
-    <script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@19.0.0",
-    "react-dom": "https://esm.sh/react-dom@19.0.0",
-    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
-    "react/jsx-runtime": "https://esm.sh/react@19.0.0/jsx-runtime",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
-    "react/": "https://esm.sh/react@^19.2.4/"
-  }
-}
-</script>
+    <link rel="stylesheet" href="/index.css">
 </head>
 <body class="overflow-hidden">
     <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
 </body>
 </html>
