@@ -5,9 +5,9 @@ import ArticleView from './components/ArticleView';
 import ArticleEditor from './components/ArticleEditor';
 
 const getEnvVar = (key: string): string => {
-  if (key === 'PASSWORD') {
+  if (key === 'PASSWORD' || key === 'password') {
     try {
-      return process.env.PASSWORD || "";
+      return process.env.PASSWORD || (process.env as any)?.password || "";
     } catch {
       return "";
     }
