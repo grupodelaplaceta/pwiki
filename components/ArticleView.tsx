@@ -12,6 +12,7 @@ interface ArticleViewProps {
 
 const ArticleView: React.FC<ArticleViewProps> = ({ article, onEdit, onNavigate, allArticles }) => {
   const contentRef = useRef<HTMLDivElement>(null);
+  const [isExporting, setIsExporting] = React.useState(false);
 
   const children = useMemo(() => 
     allArticles.filter(a => a.parentId === article.id),
@@ -48,19 +49,31 @@ const ArticleView: React.FC<ArticleViewProps> = ({ article, onEdit, onNavigate, 
   };
 
   const handleExportPDF = async () => {
-    if (!contentRef.current) return;
+    if (!contentRef.current || isExporting) return;
+    setIsExporting(true);
     
     const element = contentRef.current;
-    const actionButtons = element.querySelector('.no-print') as HTMLElement;
-    
-    if (actionButtons) actionButtons.style.display = 'none';
 
     try {
+      // Wait for fonts to be ready
+      await document.fonts.ready;
+
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
         logging: false,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        onclone: (clonedDoc) => {
+          // Inject font stylesheet into the clone to ensure it's available
+          const link = clonedDoc.createElement('link');
+          link.href = 'https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap';
+          link.rel = 'stylesheet';
+          clonedDoc.head.appendChild(link);
+
+          // Hide action buttons in the clone
+          const actionButtons = clonedDoc.querySelector('.no-print') as HTMLElement;
+          if (actionButtons) actionButtons.style.display = 'none';
+        }
       });
 
       const imgData = canvas.toDataURL('image/png');
@@ -90,7 +103,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({ article, onEdit, onNavigate, 
     } catch (error) {
       console.error('Error generating PDF:', error);
     } finally {
-      if (actionButtons) actionButtons.style.display = '';
+      setIsExporting(false);
     }
   };
 
@@ -112,8 +125,13 @@ const ArticleView: React.FC<ArticleViewProps> = ({ article, onEdit, onNavigate, 
            <button onClick={() => window.print()} className="p-2 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-slate-900 transition-all shadow-sm">
              <i className="fas fa-print text-sm"></i>
            </button>
-           <button onClick={handleExportPDF} className="p-2 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-red-500 hover:border-red-100 transition-all shadow-sm" title="Exportar a PDF">
-             <i className="fas fa-file-pdf text-sm"></i>
+           <button 
+             onClick={handleExportPDF} 
+             disabled={isExporting}
+             className={`p-2 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-red-500 hover:border-red-100 transition-all shadow-sm ${isExporting ? 'opacity-50 cursor-wait' : ''}`} 
+             title="Exportar a PDF"
+           >
+             {isExporting ? <i className="fas fa-spinner fa-spin text-sm"></i> : <i className="fas fa-file-pdf text-sm"></i>}
            </button>
         </div>
       </div>
