@@ -33,58 +33,57 @@ const ArticleView: React.FC<ArticleViewProps> = ({ article, onEdit, onNavigate, 
   const renderRichText = (text: string) => {
     if (!text) return '';
     
+    let html = text;
+    
     // Check if text looks like HTML (starts with < and contains closing tags or common HTML tags)
     const isHtml = /^\s*<[a-z][\s\S]*>/i.test(text) || /<\/(p|div|h[1-6]|ul|ol|li|blockquote)>/.test(text);
     
-    if (isHtml) {
-      // It's likely HTML from the visual editor. 
-      // We still want to process Wiki Links [[id|text]] if they exist in the HTML (though Tiptap might not support them natively yet)
-      // But for now, let's just return the HTML.
-      // Ideally we would sanitize this, but we trust the input for this internal tool.
-      return text;
+    if (!isHtml) {
+      // Escape HTML to prevent XSS (basic) for Markdown content
+      html = html.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+      // Headers
+      html = html.replace(/^# (.*$)/gm, '<h1 class="text-2xl font-black text-slate-900 mt-6 mb-4 pb-2 border-b border-slate-100">$1</h1>');
+      html = html.replace(/^## (.*$)/gm, '<h2 class="text-xl font-bold text-slate-800 mt-5 mb-3" id="$1">$1</h2>');
+      html = html.replace(/^### (.*$)/gm, '<h3 class="text-lg font-bold text-slate-700 mt-4 mb-2">$1</h3>');
+      
+      // Horizontal Rule
+      html = html.replace(/^---$/gm, '<hr class="my-6 border-slate-100" />');
+
+      // Blockquotes
+      html = html.replace(/^> (.*$)/gm, '<blockquote class="border-l-4 border-emerald-500 pl-4 py-1 my-4 bg-slate-50 italic text-slate-600 rounded-r-lg">$1</blockquote>');
+
+      // Bold & Italic
+      html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+      
+      // Inline Code
+      html = html.replace(/`(.*?)`/g, '<code class="bg-slate-100 text-emerald-600 px-1.5 py-0.5 rounded text-xs font-mono font-bold border border-slate-200">$1</code>');
+
+      // Lists (Basic implementation)
+      // Unordered
+      html = html.replace(/^\- (.*$)/gm, '<li class="ml-4 mb-1 text-slate-600 font-medium list-disc list-inside">$1</li>');
+      // Ordered
+      html = html.replace(/^\d+\. (.*$)/gm, '<li class="ml-4 mb-1 text-slate-600 font-medium list-decimal list-inside">$1</li>');
+
+      // Badges [text]
+      html = html.replace(/\[(.*?)\]/g, '<span class="norm-badge bg-slate-100 text-slate-500 text-[10px] px-2 py-0.5 rounded border border-slate-200 font-bold uppercase tracking-wider mx-1">$1</span>');
+
+      // Line breaks (handle double newlines as paragraphs, single as br)
+      html = html.replace(/\n\n/g, '</p><p class="mb-4">');
+      html = html.replace(/\n/g, '<br/>');
+      
+      // Wrap in paragraph if not already
+      html = `<p class="mb-4">${html}</p>`;
     }
 
-    let html = text;
-    
-    // Escape HTML to prevent XSS (basic) for Markdown content
-    html = html.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-    // Headers
-    html = html.replace(/^# (.*$)/gm, '<h1 class="text-2xl font-black text-slate-900 mt-6 mb-4 pb-2 border-b border-slate-100">$1</h1>');
-    html = html.replace(/^## (.*$)/gm, '<h2 class="text-xl font-bold text-slate-800 mt-5 mb-3" id="$1">$1</h2>');
-    html = html.replace(/^### (.*$)/gm, '<h3 class="text-lg font-bold text-slate-700 mt-4 mb-2">$1</h3>');
-    
-    // Horizontal Rule
-    html = html.replace(/^---$/gm, '<hr class="my-6 border-slate-100" />');
-
-    // Blockquotes
-    html = html.replace(/^> (.*$)/gm, '<blockquote class="border-l-4 border-emerald-500 pl-4 py-1 my-4 bg-slate-50 italic text-slate-600 rounded-r-lg">$1</blockquote>');
-
-    // Bold & Italic
-    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
-    
-    // Inline Code
-    html = html.replace(/`(.*?)`/g, '<code class="bg-slate-100 text-emerald-600 px-1.5 py-0.5 rounded text-xs font-mono font-bold border border-slate-200">$1</code>');
-
-    // Lists (Basic implementation)
-    // Unordered
-    html = html.replace(/^\- (.*$)/gm, '<li class="ml-4 mb-1 text-slate-600 font-medium list-disc list-inside">$1</li>');
-    // Ordered
-    html = html.replace(/^\d+\. (.*$)/gm, '<li class="ml-4 mb-1 text-slate-600 font-medium list-decimal list-inside">$1</li>');
-
-    // Wiki Links [[id|text]]
+    // Process Wiki Links [[id|text]] - Apply this to BOTH Markdown and HTML content
+    // We use a regex that handles potential HTML tags inside the link text if Tiptap added them (though unlikely for [[...]])
+    // But more importantly, we need to make sure we don't break existing HTML attributes.
+    // The pattern [[id|text]] is specific enough.
     html = html.replace(/\[\[(.*?)\|(.*?)\]\]/g, '<span class="wiki-link text-emerald-600 font-bold cursor-pointer hover:underline decoration-emerald-300 decoration-2 underline-offset-2 transition-all" data-wiki-id="$1">$2</span>');
-    
-    // Badges [text]
-    html = html.replace(/\[(.*?)\]/g, '<span class="norm-badge bg-slate-100 text-slate-500 text-[10px] px-2 py-0.5 rounded border border-slate-200 font-bold uppercase tracking-wider mx-1">$1</span>');
 
-    // Line breaks (handle double newlines as paragraphs, single as br)
-    html = html.replace(/\n\n/g, '</p><p class="mb-4">');
-    html = html.replace(/\n/g, '<br/>');
-    
-    // Wrap in paragraph if not already
-    return `<p class="mb-4">${html}</p>`;
+    return html;
   };
 
   const handleContentClick = (e: React.MouseEvent) => {

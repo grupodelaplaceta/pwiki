@@ -3,6 +3,7 @@ import { Article, ARTICLE_ICONS, ActivityLevel } from './types';
 import { INITIAL_ARTICLES } from './constants';
 import ArticleView from './components/ArticleView';
 import ArticleEditor from './components/ArticleEditor';
+import HomeView from './components/HomeView';
 
 const getEnvVar = (key: string): string => {
   if (key === 'PASSWORD' || key === 'password') {
@@ -48,7 +49,7 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [dbError, setDbError] = useState<string | null>(null);
   
-  const [currentArticleId, setCurrentArticleId] = useState<string>('inicio');
+  const [currentArticleId, setCurrentArticleId] = useState<string>('home');
   const [isEditing, setIsEditing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -64,8 +65,6 @@ const App: React.FC = () => {
     db.load()
       .then(data => {
         setArticles(data);
-        const exists = data.find(a => a.id === 'inicio');
-        setCurrentArticleId(exists ? 'inicio' : (data[0]?.id || 'inicio'));
         setLoading(false);
         setDbError(null);
       })
@@ -231,8 +230,9 @@ const App: React.FC = () => {
       <header className="no-print h-14 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center justify-between px-4 lg:px-8 z-[100] sticky top-0">
         <div className="flex items-center gap-4">
           <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="lg:hidden p-2 bg-slate-50 rounded-lg text-slate-500"><i className="fas fa-bars-staggered text-sm"></i></button>
-          <div className="flex items-center cursor-pointer" onClick={() => { setCurrentArticleId('inicio'); setIsEditing(false); setIsCreating(false); }}>
+          <div className="flex items-center cursor-pointer gap-3" onClick={() => { setCurrentArticleId('home'); setIsEditing(false); setIsCreating(false); }}>
             <img src="https://i.postimg.cc/dtyQ0jYV/WIKI.png" alt="WikiGov Logo" className="h-7 w-auto" />
+            <span className="font-black text-slate-800 text-sm hidden md:block uppercase tracking-widest">Wiki del Grupo de La Placeta</span>
           </div>
         </div>
         
@@ -285,8 +285,8 @@ const App: React.FC = () => {
               <h3 className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] mb-4">Explorar</h3>
               <nav className="space-y-1">
                 <button 
-                  onClick={() => { setCurrentArticleId('inicio'); setIsEditing(false); setIsCreating(false); setSidebarOpen(false); }}
-                  className={`w-full text-left px-3 py-2 rounded-xl text-xs transition-all flex items-center gap-2 ${currentArticleId === 'inicio' ? 'bg-slate-900 text-white font-bold' : 'text-slate-600 hover:bg-slate-50'}`}
+                  onClick={() => { setCurrentArticleId('home'); setIsEditing(false); setIsCreating(false); setSidebarOpen(false); }}
+                  className={`w-full text-left px-3 py-2 rounded-xl text-xs transition-all flex items-center gap-2 ${currentArticleId === 'home' ? 'bg-slate-900 text-white font-bold' : 'text-slate-600 hover:bg-slate-50'}`}
                 >
                   <i className="fas fa-home-alt text-[9px]"></i>
                   Panel de Inicio
@@ -321,6 +321,8 @@ const App: React.FC = () => {
               <ArticleEditor allArticles={articles} article={{}} onSave={handleSave} onCancel={() => setIsCreating(false)} />
             ) : isEditing ? (
               <ArticleEditor allArticles={articles} article={currentArticle} onSave={handleSave} onCancel={() => setIsEditing(false)} />
+            ) : currentArticleId === 'home' ? (
+              <HomeView articles={articles} onNavigate={setCurrentArticleId} />
             ) : (
               <ArticleView article={currentArticle} allArticles={articles} onEdit={() => startProtectedAction('edit')} onNavigate={setCurrentArticleId} />
             )}

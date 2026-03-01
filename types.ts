@@ -6,7 +6,10 @@ export enum ArticleType {
   ORGANIZATION = 'Organización',
   REGULATION = 'Normativa',
   ARTICLE = 'Artículo',
-  SUB_ARTICLE = 'Sub-apartado'
+  SUB_ARTICLE = 'Sub-apartado',
+  CURRENCY = 'Moneda',
+  PERSON = 'Persona',
+  AUDIOVISUAL = 'Contenido Audiovisual'
 }
 
 export const ARTICLE_ICONS: Record<ArticleType, string> = {
@@ -17,6 +20,9 @@ export const ARTICLE_ICONS: Record<ArticleType, string> = {
   [ArticleType.REGULATION]: 'fa-scale-balanced',
   [ArticleType.ARTICLE]: 'fa-file-lines',
   [ArticleType.SUB_ARTICLE]: 'fa-indent',
+  [ArticleType.CURRENCY]: 'fa-coins',
+  [ArticleType.PERSON]: 'fa-user-tie',
+  [ArticleType.AUDIOVISUAL]: 'fa-film'
 };
 
 export enum ActivityLevel {

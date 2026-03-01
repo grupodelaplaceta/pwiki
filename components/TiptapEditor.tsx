@@ -23,7 +23,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
   const isActive = (type: string, opts?: any) => editor.isActive(type, opts);
 
   return (
-    <div className="flex flex-wrap items-center gap-1 p-2 border-b border-slate-100 bg-slate-50/50 rounded-t-xl">
+    <div className="flex flex-wrap items-center gap-1 p-2 border-b border-slate-100 bg-slate-50/90 backdrop-blur-sm rounded-t-xl sticky top-0 z-10">
       <button
         onClick={() => editor.chain().focus().toggleBold().run()}
         disabled={!editor.can().chain().focus().toggleBold().run()}
@@ -121,9 +121,23 @@ const MenuBar = ({ editor }: { editor: any }) => {
           "p-2 rounded-lg text-slate-500 hover:bg-white hover:text-slate-900 transition-colors",
           isActive('link') && "bg-white text-emerald-600 shadow-sm"
         )}
-        title="Enlace"
+        title="Enlace Web"
       >
         <i className="fas fa-link text-xs"></i>
+      </button>
+
+      <button
+        onClick={() => {
+          const id = window.prompt('ID del Artículo a enlazar:');
+          if (!id) return;
+          const text = window.prompt('Texto del enlace:', id);
+          if (!text) return;
+          editor.chain().focus().insertContent(`[[${id}|${text}]]`).run();
+        }}
+        className="p-2 rounded-lg text-slate-500 hover:bg-white hover:text-slate-900 transition-colors"
+        title="Enlace Wiki Interno"
+      >
+        <i className="fas fa-share-nodes text-xs"></i>
       </button>
 
       <div className="flex-1"></div>

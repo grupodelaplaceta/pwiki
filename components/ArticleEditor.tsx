@@ -149,6 +149,28 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({ article, allArticles, onS
               </div>
 
               <div>
+                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Sector / Área</label>
+                <input 
+                  type="text" 
+                  value={formData.metadata.sector} 
+                  onChange={e => setFormData({...formData, metadata: {...formData.metadata, sector: e.target.value}})} 
+                  className="w-full bg-white rounded-lg px-3 py-2 text-[10px] font-bold outline-none border border-transparent focus:border-emerald-200" 
+                  placeholder="Ej: Finanzas, RRHH..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Etiquetas (separadas por comas)</label>
+                <input 
+                  type="text" 
+                  value={formData.metadata.tags.join(', ')} 
+                  onChange={e => setFormData({...formData, metadata: {...formData.metadata, tags: e.target.value.split(',').map(t => t.trim()).filter(Boolean)}})} 
+                  className="w-full bg-white rounded-lg px-3 py-2 text-[10px] font-bold outline-none border border-transparent focus:border-emerald-200" 
+                  placeholder="Ej: urgente, borrador, 2024"
+                />
+              </div>
+
+              <div>
                 <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Resumen Corto</label>
                 <textarea 
                   rows={3} 
