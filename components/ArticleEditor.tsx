@@ -28,6 +28,7 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({ article, allArticles, onS
     updatedAt: new Date().toISOString(),
   });
 
+  const [showGuide, setShowGuide] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const injectSyntax = (prefix: string, suffix: string = '') => {
@@ -50,7 +51,55 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({ article, allArticles, onS
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 md:p-8 shadow-2xl shadow-slate-200/50 border border-slate-100 animate-fade-in mb-10">
+    <div className="bg-white rounded-2xl p-6 md:p-8 shadow-2xl shadow-slate-200/50 border border-slate-100 animate-fade-in mb-10 relative">
+      {showGuide && (
+        <div className="absolute top-24 right-8 z-50 w-80 bg-white rounded-xl shadow-2xl border border-slate-100 p-6 animate-fade-in">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-black text-slate-900 text-sm uppercase tracking-widest">Guía de Formato</h3>
+            <button onClick={() => setShowGuide(false)} className="text-slate-400 hover:text-red-500"><i className="fas fa-times"></i></button>
+          </div>
+          <div className="space-y-3 text-xs text-slate-600 font-medium">
+            <div className="grid grid-cols-2 gap-2 border-b border-slate-50 pb-2">
+              <code className="bg-slate-50 px-1 rounded text-emerald-600">## Título</code>
+              <span>Subtítulo</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 border-b border-slate-50 pb-2">
+              <code className="bg-slate-50 px-1 rounded text-emerald-600">**Texto**</code>
+              <span className="font-bold">Negrita</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 border-b border-slate-50 pb-2">
+              <code className="bg-slate-50 px-1 rounded text-emerald-600">*Texto*</code>
+              <span className="italic">Cursiva</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 border-b border-slate-50 pb-2">
+              <code className="bg-slate-50 px-1 rounded text-emerald-600">- Item</code>
+              <span>Lista</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 border-b border-slate-50 pb-2">
+              <code className="bg-slate-50 px-1 rounded text-emerald-600">1. Item</code>
+              <span>Lista Num.</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 border-b border-slate-50 pb-2">
+              <code className="bg-slate-50 px-1 rounded text-emerald-600">&gt; Cita</code>
+              <span className="italic border-l-2 border-slate-300 pl-1">Bloque</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 border-b border-slate-50 pb-2">
+              <code className="bg-slate-50 px-1 rounded text-emerald-600">---</code>
+              <span>Separador</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 border-b border-slate-50 pb-2">
+              <code className="bg-slate-50 px-1 rounded text-emerald-600">`Código`</code>
+              <span className="font-mono bg-slate-100 px-1 rounded">Inline</span>
+            </div>
+            <div className="col-span-2 pt-1">
+              <div className="mb-1 font-bold text-[10px] uppercase text-slate-400">Enlace Interno (Wiki)</div>
+              <code className="block bg-emerald-50 text-emerald-700 px-2 py-1 rounded border border-emerald-100 mb-1">[[id-articulo|Texto del Enlace]]</code>
+              <div className="text-[10px] text-slate-400">Usa el ID del artículo destino.</div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
           <h2 className="text-2xl font-black text-slate-900 heading-font tracking-tight">
@@ -90,6 +139,8 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({ article, allArticles, onS
               <button onClick={() => injectSyntax("**", "**")} className="w-8 h-8 flex items-center justify-center text-xs hover:bg-white rounded-lg transition-all"><i className="fas fa-bold"></i></button>
               <button onClick={() => injectSyntax("[[id|", "]]")} className="px-3 h-8 flex items-center justify-center text-[9px] font-black text-emerald-600 hover:bg-white rounded-lg transition-all">WIKI LINK</button>
               <button onClick={() => injectSyntax("[", "]")} className="px-3 h-8 flex items-center justify-center text-[9px] font-black text-slate-400 hover:bg-white rounded-lg transition-all">BADGE</button>
+              <div className="w-px h-5 bg-slate-200 mx-1"></div>
+              <button onClick={() => setShowGuide(!showGuide)} className={`w-8 h-8 flex items-center justify-center text-xs hover:bg-white rounded-lg transition-all ${showGuide ? 'bg-white text-emerald-500' : 'text-slate-400'}`} title="Guía de Formato"><i className="fas fa-question"></i></button>
             </div>
             <textarea 
               ref={textareaRef}
