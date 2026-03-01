@@ -1,5 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { Article, ArticleType, ActivityLevel, ARTICLE_ICONS } from '../types';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 interface ArticleViewProps {
   article: Article;
@@ -9,6 +11,8 @@ interface ArticleViewProps {
 }
 
 const ArticleView: React.FC<ArticleViewProps> = ({ article, onEdit, onNavigate, allArticles }) => {
+  const contentRef = useRef<HTMLDivElement>(null);
+
   const children = useMemo(() => 
     allArticles.filter(a => a.parentId === article.id),
     [allArticles, article.id]
@@ -43,8 +47,55 @@ const ArticleView: React.FC<ArticleViewProps> = ({ article, onEdit, onNavigate, 
     if (wikiId) onNavigate(wikiId);
   };
 
+  const handleExportPDF = async () => {
+    if (!contentRef.current) return;
+    
+    const element = contentRef.current;
+    const actionButtons = element.querySelector('.no-print') as HTMLElement;
+    
+    if (actionButtons) actionButtons.style.display = 'none';
+
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`${article.title || 'document'}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    } finally {
+      if (actionButtons) actionButtons.style.display = '';
+    }
+  };
+
   return (
-    <div className="animate-fade-in pb-10">
+    <div ref={contentRef} className="animate-fade-in pb-10">
       {/* HEADER DE ARTICULO */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
         <div>
@@ -60,6 +111,9 @@ const ArticleView: React.FC<ArticleViewProps> = ({ article, onEdit, onNavigate, 
            </button>
            <button onClick={() => window.print()} className="p-2 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-slate-900 transition-all shadow-sm">
              <i className="fas fa-print text-sm"></i>
+           </button>
+           <button onClick={handleExportPDF} className="p-2 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-red-500 hover:border-red-100 transition-all shadow-sm" title="Exportar a PDF">
+             <i className="fas fa-file-pdf text-sm"></i>
            </button>
         </div>
       </div>
