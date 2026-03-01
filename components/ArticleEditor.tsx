@@ -106,6 +106,7 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({ article, allArticles, onS
               content={formData.content} 
               onChange={(html) => setFormData({...formData, content: html})}
               placeholder="Escribe el contenido del artículo..."
+              articles={allArticles}
             />
           </div>
         </div>

@@ -5,6 +5,9 @@ import Placeholder from '@tiptap/extension-placeholder';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+import { Article, ARTICLE_ICONS } from '../types';
+import { useState, useMemo } from 'react';
+
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -13,9 +16,10 @@ interface TiptapEditorProps {
   content: string;
   onChange: (html: string) => void;
   placeholder?: string;
+  articles?: Article[];
 }
 
-const MenuBar = ({ editor }: { editor: any }) => {
+const MenuBar = ({ editor, onOpenLinkModal }: { editor: any, onOpenLinkModal: () => void }) => {
   if (!editor) {
     return null;
   }
@@ -127,15 +131,9 @@ const MenuBar = ({ editor }: { editor: any }) => {
       </button>
 
       <button
-        onClick={() => {
-          const id = window.prompt('ID del Artículo a enlazar:');
-          if (!id) return;
-          const text = window.prompt('Texto del enlace:', id);
-          if (!text) return;
-          editor.chain().focus().insertContent(`[[${id}|${text}]]`).run();
-        }}
+        onClick={onOpenLinkModal}
         className="p-2 rounded-lg text-slate-500 hover:bg-white hover:text-slate-900 transition-colors"
-        title="Enlace Wiki Interno"
+        title="Citar Artículo (Wiki Link)"
       >
         <i className="fas fa-share-nodes text-xs"></i>
       </button>
@@ -162,7 +160,10 @@ const MenuBar = ({ editor }: { editor: any }) => {
   );
 };
 
-const TiptapEditor = ({ content, onChange, placeholder }: TiptapEditorProps) => {
+const TiptapEditor = ({ content, onChange, placeholder, articles = [] }: TiptapEditorProps) => {
+  const [showLinkModal, setShowLinkModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -192,10 +193,59 @@ const TiptapEditor = ({ content, onChange, placeholder }: TiptapEditorProps) => 
     },
   });
 
+  const filteredArticles = useMemo(() => {
+    if (!searchTerm) return articles.slice(0, 5);
+    return articles.filter(a => a.title.toLowerCase().includes(searchTerm.toLowerCase())).slice(0, 10);
+  }, [articles, searchTerm]);
+
+  const insertLink = (article: Article) => {
+    editor?.chain().focus().insertContent(`[[${article.id}|${article.title}]]`).run();
+    setShowLinkModal(false);
+    setSearchTerm('');
+  };
+
   return (
-    <div className="w-full bg-slate-50 border-2 border-slate-50 rounded-xl overflow-hidden focus-within:bg-white focus-within:border-emerald-100 transition-all">
-      <MenuBar editor={editor} />
+    <div className="w-full bg-slate-50 border-2 border-slate-50 rounded-xl overflow-hidden focus-within:bg-white focus-within:border-emerald-100 transition-all relative">
+      <MenuBar editor={editor} onOpenLinkModal={() => setShowLinkModal(!showLinkModal)} />
       <EditorContent editor={editor} />
+
+      {/* Modal for Link Selection */}
+      {showLinkModal && (
+        <div className="absolute top-12 left-2 z-50 w-72 bg-white rounded-xl shadow-2xl border border-slate-100 p-3 animate-fade-in">
+           <div className="flex justify-between items-center mb-2">
+             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Citar Artículo</span>
+             <button onClick={() => setShowLinkModal(false)} className="text-slate-300 hover:text-slate-500"><i className="fas fa-times"></i></button>
+           </div>
+           <input 
+             autoFocus
+             type="text" 
+             placeholder="Buscar por título..." 
+             className="w-full bg-slate-50 border border-slate-100 rounded-lg px-3 py-2 text-xs mb-2 outline-none focus:border-emerald-200 font-bold text-slate-700 placeholder:font-normal"
+             value={searchTerm}
+             onChange={e => setSearchTerm(e.target.value)}
+           />
+           <div className="max-h-48 overflow-y-auto custom-scrollbar space-y-1">
+             {filteredArticles.map(a => (
+               <button 
+                 key={a.id}
+                 onClick={() => insertLink(a)}
+                 className="w-full text-left px-2 py-2 hover:bg-emerald-50 rounded-lg text-xs flex items-center gap-3 group transition-colors"
+               >
+                 <div className="w-6 h-6 rounded bg-slate-50 group-hover:bg-emerald-100 flex items-center justify-center text-slate-300 group-hover:text-emerald-600 transition-colors shrink-0">
+                    <i className={`fas ${ARTICLE_ICONS[a.type] || 'fa-file'}`}></i>
+                 </div>
+                 <div className="min-w-0">
+                   <div className="truncate font-bold text-slate-700 group-hover:text-emerald-800">{a.title}</div>
+                   <div className="truncate text-[9px] text-slate-400 group-hover:text-emerald-600/70">{a.metadata.lawCode || a.type}</div>
+                 </div>
+               </button>
+             ))}
+             {filteredArticles.length === 0 && (
+               <div className="text-center text-[10px] text-slate-400 py-4 italic">No se encontraron artículos</div>
+             )}
+           </div>
+        </div>
+      )}
     </div>
   );
 };
