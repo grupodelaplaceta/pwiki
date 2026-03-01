@@ -23,7 +23,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
   const isActive = (type: string, opts?: any) => editor.isActive(type, opts);
 
   return (
-    <div className="flex flex-wrap items-center gap-1 p-2 border-b border-slate-100 bg-slate-50/90 backdrop-blur-sm rounded-t-xl sticky top-0 z-10">
+    <div className="flex flex-wrap items-center gap-1 p-2 border-b border-slate-100 bg-slate-50 rounded-t-xl sticky top-0 z-20">
       <button
         onClick={() => editor.chain().focus().toggleBold().run()}
         disabled={!editor.can().chain().focus().toggleBold().run()}
