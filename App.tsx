@@ -227,7 +227,7 @@ const App: React.FC = () => {
       )}
 
       {/* HEADER MODERNO */}
-      <header className="no-print h-14 bg-white border-b border-slate-100 flex items-center justify-between px-4 lg:px-8 z-[100] relative">
+      <header className="no-print h-14 bg-white border-b border-slate-100 flex items-center justify-between px-4 lg:px-8 z-[100] sticky top-0">
         <div className="flex items-center gap-4">
           <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="lg:hidden p-2 bg-slate-50 rounded-lg text-slate-500"><i className="fas fa-bars-staggered text-sm"></i></button>
           <div className="flex items-center cursor-pointer gap-3" onClick={() => { setCurrentArticleId('home'); setIsEditing(false); setIsCreating(false); }}>
