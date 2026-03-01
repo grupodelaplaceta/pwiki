@@ -8,11 +8,15 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Handle ESM/CJS interop for pg
 const { Pool } = pg;
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
+
+  console.log('Starting server...');
+  console.log('DATABASE_URL present:', !!(process.env.DATABASE_URL || process.env.POSTGRES_URL));
 
   // Database connection
   const pool = new Pool({
@@ -25,7 +29,7 @@ async function startServer() {
   // Initialize database
   try {
     const client = await pool.connect();
-    console.log('Connected to PostgreSQL');
+    console.log('Connected to PostgreSQL successfully');
     await client.query(`
       CREATE TABLE IF NOT EXISTS articles (
         id TEXT PRIMARY KEY,
@@ -52,6 +56,7 @@ async function startServer() {
     try {
       const result = await pool.query('SELECT data FROM articles');
       const articles = result.rows.map(row => row.data);
+      console.log(`Fetched ${articles.length} articles from DB`);
       res.json(articles);
     } catch (err) {
       console.error('Error fetching articles:', err);

@@ -21,40 +21,29 @@ const getEnvVar = (key: string): string => {
 
 const db = {
   save: async (articles: Article[]) => {
-    try {
-      const response = await fetch('/api/articles', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(articles)
-      });
-      if (!response.ok) throw new Error('Failed to save to DB');
-    } catch (e) {
-      console.error("Database save error:", e);
-      // Fallback to localStorage for safety
-      localStorage.setItem('wiki_placeta_v3_store', JSON.stringify(articles));
-    }
+    const response = await fetch('/api/articles', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(articles)
+    });
+    if (!response.ok) throw new Error('Failed to save to DB');
   },
   load: async (): Promise<Article[]> => {
-    try {
-      const response = await fetch('/api/articles');
-      if (!response.ok) throw new Error('Failed to fetch from DB');
-      const data = await response.json();
-      if (data && data.length > 0) return data;
-      
-      // If DB is empty, use initial articles and save them
-      await db.save(INITIAL_ARTICLES);
-      return INITIAL_ARTICLES;
-    } catch (e) {
-      console.error("Database load error:", e);
-      const saved = localStorage.getItem('wiki_placeta_v3_store');
-      return saved ? JSON.parse(saved) : INITIAL_ARTICLES;
-    }
+    const response = await fetch('/api/articles');
+    if (!response.ok) throw new Error('Failed to fetch from DB');
+    const data = await response.json();
+    if (data && data.length > 0) return data;
+    
+    // If DB is empty, use initial articles and save them
+    await db.save(INITIAL_ARTICLES);
+    return INITIAL_ARTICLES;
   }
 };
 
 const App: React.FC = () => {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dbError, setDbError] = useState<string | null>(null);
   
   const [currentArticleId, setCurrentArticleId] = useState<string>('inicio');
   const [isEditing, setIsEditing] = useState(false);
@@ -69,12 +58,19 @@ const App: React.FC = () => {
   const [pendingAction, setPendingAction] = useState<'create' | 'edit' | null>(null);
 
   useEffect(() => {
-    db.load().then(data => {
-      setArticles(data);
-      const exists = data.find(a => a.id === 'inicio');
-      setCurrentArticleId(exists ? 'inicio' : (data[0]?.id || 'inicio'));
-      setLoading(false);
-    }).catch(() => setLoading(false));
+    db.load()
+      .then(data => {
+        setArticles(data);
+        const exists = data.find(a => a.id === 'inicio');
+        setCurrentArticleId(exists ? 'inicio' : (data[0]?.id || 'inicio'));
+        setLoading(false);
+        setDbError(null);
+      })
+      .catch((err) => {
+        console.error("Critical DB Error:", err);
+        setDbError("Error crítico: No se puede conectar con la base de datos. Por favor, verifica la configuración.");
+        setLoading(false);
+      });
   }, []);
 
   const handleSave = async (newArticle: Article) => {
@@ -85,12 +81,19 @@ const App: React.FC = () => {
     } else {
       newArticles.push(newArticle);
     }
-    setArticles(newArticles);
-    await db.save(newArticles);
-    setCurrentArticleId(newArticle.id);
-    setIsEditing(false);
-    setIsCreating(false);
-    setSidebarOpen(false);
+    
+    try {
+      await db.save(newArticles);
+      setArticles(newArticles);
+      setCurrentArticleId(newArticle.id);
+      setIsEditing(false);
+      setIsCreating(false);
+      setSidebarOpen(false);
+      setDbError(null);
+    } catch (err) {
+      console.error("Save Error:", err);
+      alert("Error al guardar en la base de datos. Los cambios no se han guardado.");
+    }
   };
 
   const sortedArticles = useMemo(() => {
@@ -174,6 +177,26 @@ const App: React.FC = () => {
 
   if (loading) {
     return <div className="h-screen w-screen flex items-center justify-center bg-white"><div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div></div>;
+  }
+
+  if (dbError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-red-50 p-4">
+        <div className="bg-white p-8 rounded-2xl shadow-lg max-w-md text-center border border-red-100">
+          <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i className="fas fa-database text-2xl"></i>
+          </div>
+          <h2 className="text-xl font-black text-slate-900 mb-2">Error de Conexión</h2>
+          <p className="text-slate-600 mb-6">{dbError}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-6 py-2 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-colors"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
