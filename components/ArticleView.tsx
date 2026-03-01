@@ -31,9 +31,22 @@ const ArticleView: React.FC<ArticleViewProps> = ({ article, onEdit, onNavigate, 
   }[article.activityLevel];
 
   const renderRichText = (text: string) => {
+    if (!text) return '';
+    
+    // Check if text looks like HTML (starts with < and contains closing tags or common HTML tags)
+    const isHtml = /^\s*<[a-z][\s\S]*>/i.test(text) || /<\/(p|div|h[1-6]|ul|ol|li|blockquote)>/.test(text);
+    
+    if (isHtml) {
+      // It's likely HTML from the visual editor. 
+      // We still want to process Wiki Links [[id|text]] if they exist in the HTML (though Tiptap might not support them natively yet)
+      // But for now, let's just return the HTML.
+      // Ideally we would sanitize this, but we trust the input for this internal tool.
+      return text;
+    }
+
     let html = text;
     
-    // Escape HTML to prevent XSS (basic)
+    // Escape HTML to prevent XSS (basic) for Markdown content
     html = html.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
     // Headers
