@@ -58,9 +58,13 @@ async function startServer() {
       const articles = result.rows.map(row => row.data);
       console.log(`Fetched ${articles.length} articles from DB`);
       res.json(articles);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching articles:', err);
-      res.status(500).json({ error: 'Failed to fetch articles' });
+      res.status(500).json({ 
+        error: 'Failed to fetch articles',
+        details: err.message,
+        code: err.code
+      });
     }
   });
 
@@ -97,9 +101,13 @@ async function startServer() {
       } finally {
         client.release();
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error saving articles:', err);
-      res.status(500).json({ error: 'Failed to save articles' });
+      res.status(500).json({ 
+        error: 'Failed to save articles',
+        details: err.message,
+        code: err.code
+      });
     }
   });
 

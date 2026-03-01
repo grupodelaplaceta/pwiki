@@ -30,7 +30,10 @@ const db = {
   },
   load: async (): Promise<Article[]> => {
     const response = await fetch('/api/articles');
-    if (!response.ok) throw new Error('Failed to fetch from DB');
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.details || errorData.error || `Error ${response.status}: ${response.statusText}`);
+    }
     const data = await response.json();
     if (data && data.length > 0) return data;
     
@@ -68,7 +71,7 @@ const App: React.FC = () => {
       })
       .catch((err) => {
         console.error("Critical DB Error:", err);
-        setDbError("Error crítico: No se puede conectar con la base de datos. Por favor, verifica la configuración.");
+        setDbError(`Error crítico: ${err.message || "No se puede conectar con la base de datos."}`);
         setLoading(false);
       });
   }, []);
